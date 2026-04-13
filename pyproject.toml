@@ -24,7 +24,7 @@ dev = [
   "pre-commit>=4.2.0",
   "pytest>=8.3.5",
   "ruff>=0.11.0",
-  "types-PyYAML>=6.0.12.20240917",
+  "types-PyYAML>=6.0.12.20260408",
 ]
 
 [dependency-groups]
@@ -34,14 +34,14 @@ dev = [
   "pytest>=8.3.5",
   "pytest-cov>=6.0.0",
   "ruff>=0.11.0",
-  "types-PyYAML>=6.0.12.20240917",
+  "types-PyYAML>=6.0.12.20260408",
 ]
 qa = [
   "bandit[toml]>=1.8.3",
   "deptry>=0.21.1",
   "pip-audit>=2.10.0",
   "pytest-cov>=6.0.0",
-  "types-PyYAML>=6.0.12.20240917",
+  "types-PyYAML>=6.0.12.20260408",
 ]
 
 [tool.setuptools]
