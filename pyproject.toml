@@ -54,6 +54,7 @@ where = ["src"]
 target-version = "py311"
 line-length = 100
 src = ["src", "tests", "scripts"]
+exclude = ["src/bsdbng/datamodel/bsdbng_pydantic.py"]
 
 [tool.ruff.lint]
 select = [
@@ -84,6 +85,9 @@ warn_unused_ignores = true
 show_error_codes = true
 pretty = true
 mypy_path = "src"
+exclude = [
+  "src/bsdbng/datamodel/bsdbng_pydantic\\.py$",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -104,6 +108,7 @@ skips = []
 exclude = [
   ".venv",
   "tests",
+  "src/bsdbng/datamodel",
 ]
 ignore = [
   "DEP002",

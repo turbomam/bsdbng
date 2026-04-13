@@ -34,14 +34,6 @@ repos:
     hooks:
       - id: ruff-check
       - id: ruff-format
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - pydantic>=2.11.0
-          - pyyaml>=6.0.2
-          - types-PyYAML>=6.0.12.20260408
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.8.17
     hooks:
@@ -60,6 +52,18 @@ repos:
         pass_filenames: false
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run mypy src tests
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: check-generated-artifacts
+        name: check-generated-artifacts
+        entry: just check-generated
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: pip-audit
         name: pip-audit
         entry: uv run pip-audit

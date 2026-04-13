@@ -5,6 +5,18 @@ lintconfig := "schema/.linkmllint.yaml"
 
 default: check
 
+gen-pydantic:
+	mkdir -p src/bsdbng/datamodel
+	uv run gen-pydantic {{schema}} > src/bsdbng/datamodel/bsdbng_pydantic.py
+
+gen-derived: gen-pydantic
+
+check-generated:
+	tmpfile="$(mktemp)" && \
+	trap 'rm -f "$tmpfile"' EXIT && \
+	uv run gen-pydantic {{schema}} > "$tmpfile" && \
+	diff -u src/bsdbng/datamodel/bsdbng_pydantic.py "$tmpfile"
+
 sync:
 	uv sync --all-extras --group dev --group qa
 
@@ -42,4 +54,4 @@ lint-schema:
 
 check-schema: validate-schema lint-schema
 
-check: lint typecheck test check-schema security
+check: check-generated lint typecheck test check-schema security
