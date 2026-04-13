@@ -1,0 +1,5 @@
+[default]
+extend-ignore-re = []
+
+[files]
+extend-exclude = ["uv.lock", ".venv"]

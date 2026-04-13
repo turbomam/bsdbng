@@ -12,9 +12,13 @@ The initial design constraints are:
 ## Guardrails
 
 - `uv` for environment and dependency management
+- `just` for stable developer commands
 - `ruff` for linting and formatting checks
 - `mypy --strict` for type checking
 - `pytest` for tests
+- `bandit` for Python security linting
+- `deptry` for dependency hygiene
+- `pip-audit` for vulnerability scanning
 - `linkml lint` and `linkml validate` for schema checks
 - CI runs the full check suite on every push and PR
 
