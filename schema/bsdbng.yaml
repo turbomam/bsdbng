@@ -2,9 +2,8 @@ id: https://w3id.org/bsdbng/schema
 name: bsdbng
 title: BugSigDB Normalized Graph Schema
 description: >-
-  Strict LinkML schema for normalized BugSigDB ingestion. This schema is
-  intentionally narrow and models only the canonical ingestion artifacts needed
-  to represent studies, experiments, signatures, and taxa.
+  LinkML schema for normalized BugSigDB studies, experiments, signatures,
+  and taxa.
 license: MIT
 default_prefix: bsdbng
 default_range: string
@@ -21,72 +20,92 @@ imports:
 classes:
   BugSigDBDataset:
     tree_root: true
-    title: BugSigDB Dataset
-    description: Canonical collection of normalized BugSigDB study records.
+    title: Dataset
+    description: Collection of normalized BugSigDB study records.
     attributes:
       studies:
-        title: Studies
+        title: Study records
         range: StudyRecord
         multivalued: true
         inlined_as_list: true
         required: true
-        description: Study records included in the dataset.
+        description: Normalized study records in the dataset.
 
   StudyRecord:
-    title: Study Record
-    description: Canonical normalized representation of a BugSigDB study.
+    title: Study
+    description: >-
+      One published microbiome study from which BugSigDB collects and
+      standardizes microbial signatures.
     slots:
       - study_id
       - source_record_id
       - title
       - publication_year
       - doi
-      - experiments
+    attributes:
+      experiments:
+        title: Experiments
+        description: Semantic experiment units recorded for the study.
+        range: ExperimentRecord
+        multivalued: true
+        inlined_as_list: true
+        required: true
     slot_usage:
       study_id:
         identifier: true
         required: true
-      experiments:
-        required: true
-        multivalued: true
 
   ExperimentRecord:
-    title: Experiment Record
-    description: Canonical normalized representation of a BugSigDB experiment.
+    title: Experiment
+    description: >-
+      One semantic unit within a study that records contrasted sample groups
+      and key metadata relevant to differential abundance findings.
     slots:
       - experiment_id
       - experiment_name
       - group_0_name
       - group_1_name
-      - signatures
+    attributes:
+      signatures:
+        title: Signatures
+        description: Signatures associated with the experiment.
+        range: SignatureRecord
+        multivalued: true
+        inlined_as_list: true
+        required: true
     slot_usage:
       experiment_id:
         identifier: true
         required: true
-      signatures:
-        required: true
-        multivalued: true
 
   SignatureRecord:
-    title: Signature Record
-    description: Canonical normalized representation of a directional BugSigDB signature.
+    title: Signature
+    description: >-
+      A microbial signature represented as an unordered set of taxa sharing
+      a common property or response to a study condition.
     slots:
       - signature_id
       - direction
-      - taxa
+    attributes:
+      taxa:
+        title: Taxa
+        description: Taxa listed in the signature.
+        range: TaxonRecord
+        multivalued: true
+        inlined_as_list: true
+        required: true
     slot_usage:
       signature_id:
         identifier: true
         required: true
       direction:
         required: true
-      taxa:
-        required: true
-        multivalued: true
 
   TaxonRecord:
-    title: Taxon Record
-    description: Canonical normalized taxon assertion from a BugSigDB signature.
+    title: Taxon
+    description: >-
+      A taxonomic unit of any rank designating a microbial organism or group
+      of microbial organisms.
     slots:
       - taxon_id
       - taxon_name
@@ -102,12 +121,12 @@ classes:
 slots:
   study_id:
     title: Study ID
-    description: Stable BugSigDB study identifier used by the normalized dataset.
+    description: BugSigDB study identifier.
     pattern: "^.+$"
 
   source_record_id:
     title: Source Record ID
-    description: Original BugSigDB source identifier as exported in the raw CSVs.
+    description: Study identifier exactly as exported by BugSigDB.
     range: string
     required: true
 
@@ -118,92 +137,74 @@ slots:
 
   publication_year:
     title: Publication Year
-    description: Year of publication.
+    description: Publication year.
     range: integer
     minimum_value: 1900
     maximum_value: 2100
 
   doi:
     title: DOI
-    description: Digital Object Identifier.
+    description: Digital object identifier for the study.
     range: string
     pattern: "^10\\..+$"
 
-  experiments:
-    title: Experiments
-    description: Experiments nested under a study.
-    range: ExperimentRecord
-    multivalued: true
-
   experiment_id:
     title: Experiment ID
-    description: Stable normalized experiment identifier.
+    description: Experiment identifier.
     pattern: "^.+$"
 
   experiment_name:
     title: Experiment Name
-    description: Human-readable experiment name.
+    description: Label for the experiment.
     range: string
 
   group_0_name:
     title: Group 0 Name
-    description: Name of the reference/control group.
+    description: Label for one of the contrasted sample groups.
     range: string
 
   group_1_name:
     title: Group 1 Name
-    description: Name of the case/comparison group.
+    description: Label for the other contrasted sample group.
     range: string
-
-  signatures:
-    title: Signatures
-    description: Directional signatures nested under an experiment.
-    range: SignatureRecord
-    multivalued: true
 
   signature_id:
     title: Signature ID
-    description: Stable normalized signature identifier.
+    description: Signature identifier.
     pattern: "^.+$"
 
   direction:
     title: Direction
-    description: Direction of abundance change.
+    description: Reported direction of abundance change for taxa in the signature.
     range: DirectionEnum
     required: true
 
-  taxa:
-    title: Taxa
-    description: Taxa nested under a signature.
-    range: TaxonRecord
-    multivalued: true
-
   taxon_id:
     title: Taxon ID
-    description: NCBITaxon CURIE.
+    description: NCBITaxon CURIE for the reported taxon.
     pattern: "^NCBITaxon:[0-9]+$"
 
   taxon_name:
     title: Taxon Name
-    description: Taxon label as normalized from BugSigDB.
+    description: Reported taxon label.
     range: string
 
   taxonomic_rank:
     title: Taxonomic Rank
-    description: Normalized taxonomic rank.
+    description: Taxonomic rank of the reported taxon.
     range: TaxonomicRankEnum
 
 enums:
   DirectionEnum:
-    title: Direction Enum
-    description: Allowed directions of abundance change for a signature.
+    title: Direction values
+    description: Allowed values for reported abundance direction.
     permissible_values:
       increased:
       decreased:
 
   TaxonomicRankEnum:
-    title: Taxonomic Rank Enum
-    description: Allowed normalized taxonomic ranks for BugSigDB taxa.
+    title: Taxonomic rank values
+    description: Allowed taxonomic rank values for normalized BugSigDB taxa.
     permissible_values:
       strain:
       species:
