@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+          enable-cache: true
+      - name: Sync environment
+        run: uv sync --all-extras --group dev
+      - name: Run checks
+        run: |
+          uv run ruff check src tests scripts
+          uv run ruff format --check src tests scripts
+          uv run mypy src tests
+          uv run pytest
+          uv run linkml validate -s schema/bsdbng.yaml
+          uv run linkml lint --config schema/.linkmllint.yaml --validate --ignore-warnings schema/bsdbng.yaml
+          uv run linkml lint --config schema/.linkmllint.yaml --ignore-warnings schema/bsdbng.yaml

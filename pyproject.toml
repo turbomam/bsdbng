@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bsdbng"
+version = "0.1.0"
+description = "Strict BugSigDB ingestion and normalization"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "Mark Miller" }
+]
+dependencies = [
+  "linkml>=1.8.7",
+  "linkml-runtime>=1.8.3",
+  "pydantic>=2.11.0",
+  "pyyaml>=6.0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.15.0",
+  "pre-commit>=4.2.0",
+  "pytest>=8.3.5",
+  "ruff>=0.11.0",
+  "types-PyYAML>=6.0.12.20240917",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15.0",
+  "pre-commit>=4.2.0",
+  "pytest>=8.3.5",
+  "ruff>=0.11.0",
+  "types-PyYAML>=6.0.12.20240917",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "UP",
+  "B",
+  "C4",
+  "SIM",
+  "ARG",
+  "PIE",
+  "PT",
+  "RUF",
+]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.codespell]
+skip = [
+  ".venv",
+  "uv.lock",
+]
+quiet-level = 3

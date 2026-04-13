@@ -1,0 +1,217 @@
+id: https://w3id.org/bsdbng/schema
+name: bsdbng
+title: BugSigDB Normalized Graph Schema
+description: >-
+  Strict LinkML schema for normalized BugSigDB ingestion. This schema is
+  intentionally narrow and models only the canonical ingestion artifacts needed
+  to represent studies, experiments, signatures, and taxa.
+license: MIT
+default_prefix: bsdbng
+default_range: string
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  bsdbng: https://w3id.org/bsdbng/
+  NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
+  bugsigdb: https://bugsigdb.org/
+
+imports:
+  - linkml:types
+
+classes:
+  BugSigDBDataset:
+    tree_root: true
+    title: BugSigDB Dataset
+    description: Canonical collection of normalized BugSigDB study records.
+    attributes:
+      studies:
+        title: Studies
+        range: StudyRecord
+        multivalued: true
+        inlined_as_list: true
+        required: true
+        description: Study records included in the dataset.
+
+  StudyRecord:
+    title: Study Record
+    description: Canonical normalized representation of a BugSigDB study.
+    slots:
+      - study_id
+      - source_record_id
+      - title
+      - publication_year
+      - doi
+      - experiments
+    slot_usage:
+      study_id:
+        identifier: true
+        required: true
+      experiments:
+        required: true
+        multivalued: true
+
+  ExperimentRecord:
+    title: Experiment Record
+    description: Canonical normalized representation of a BugSigDB experiment.
+    slots:
+      - experiment_id
+      - experiment_name
+      - group_0_name
+      - group_1_name
+      - signatures
+    slot_usage:
+      experiment_id:
+        identifier: true
+        required: true
+      signatures:
+        required: true
+        multivalued: true
+
+  SignatureRecord:
+    title: Signature Record
+    description: Canonical normalized representation of a directional BugSigDB signature.
+    slots:
+      - signature_id
+      - direction
+      - taxa
+    slot_usage:
+      signature_id:
+        identifier: true
+        required: true
+      direction:
+        required: true
+      taxa:
+        required: true
+        multivalued: true
+
+  TaxonRecord:
+    title: Taxon Record
+    description: Canonical normalized taxon assertion from a BugSigDB signature.
+    slots:
+      - taxon_id
+      - taxon_name
+      - taxonomic_rank
+    slot_usage:
+      taxon_id:
+        required: true
+      taxon_name:
+        required: true
+      taxonomic_rank:
+        required: true
+
+slots:
+  study_id:
+    title: Study ID
+    description: Stable BugSigDB study identifier used by the normalized dataset.
+    pattern: "^.+$"
+
+  source_record_id:
+    title: Source Record ID
+    description: Original BugSigDB source identifier as exported in the raw CSVs.
+    range: string
+    required: true
+
+  title:
+    title: Title
+    description: Study title.
+    range: string
+
+  publication_year:
+    title: Publication Year
+    description: Year of publication.
+    range: integer
+    minimum_value: 1900
+    maximum_value: 2100
+
+  doi:
+    title: DOI
+    description: Digital Object Identifier.
+    range: string
+    pattern: "^10\\..+$"
+
+  experiments:
+    title: Experiments
+    description: Experiments nested under a study.
+    range: ExperimentRecord
+    multivalued: true
+
+  experiment_id:
+    title: Experiment ID
+    description: Stable normalized experiment identifier.
+    pattern: "^.+$"
+
+  experiment_name:
+    title: Experiment Name
+    description: Human-readable experiment name.
+    range: string
+
+  group_0_name:
+    title: Group 0 Name
+    description: Name of the reference/control group.
+    range: string
+
+  group_1_name:
+    title: Group 1 Name
+    description: Name of the case/comparison group.
+    range: string
+
+  signatures:
+    title: Signatures
+    description: Directional signatures nested under an experiment.
+    range: SignatureRecord
+    multivalued: true
+
+  signature_id:
+    title: Signature ID
+    description: Stable normalized signature identifier.
+    pattern: "^.+$"
+
+  direction:
+    title: Direction
+    description: Direction of abundance change.
+    range: DirectionEnum
+    required: true
+
+  taxa:
+    title: Taxa
+    description: Taxa nested under a signature.
+    range: TaxonRecord
+    multivalued: true
+
+  taxon_id:
+    title: Taxon ID
+    description: NCBITaxon CURIE.
+    pattern: "^NCBITaxon:[0-9]+$"
+
+  taxon_name:
+    title: Taxon Name
+    description: Taxon label as normalized from BugSigDB.
+    range: string
+
+  taxonomic_rank:
+    title: Taxonomic Rank
+    description: Normalized taxonomic rank.
+    range: TaxonomicRankEnum
+
+enums:
+  DirectionEnum:
+    title: Direction Enum
+    description: Allowed directions of abundance change for a signature.
+    permissible_values:
+      increased:
+      decreased:
+
+  TaxonomicRankEnum:
+    title: Taxonomic Rank Enum
+    description: Allowed normalized taxonomic ranks for BugSigDB taxa.
+    permissible_values:
+      strain:
+      species:
+      subspecies:
+      isolate:
+      genus:
+      family:
+      order:
+      class:
+      phylum:
+      superkingdom:
