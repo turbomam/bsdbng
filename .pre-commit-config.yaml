@@ -21,6 +21,10 @@ repos:
       - id: codespell
         additional_dependencies:
           - tomli
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.31.1
+    hooks:
+      - id: typos
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -42,3 +46,36 @@ repos:
     rev: 0.8.17
     hooks:
       - id: uv-lock
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+  - repo: https://github.com/fpgmaas/deptry
+    rev: 0.21.1
+    hooks:
+      - id: deptry
+        args: [src]
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit
+        entry: uv run pip-audit
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: linkml-lint
+        name: linkml-lint
+        entry: uv run linkml lint --config schema/.linkmllint.yaml --validate --ignore-warnings schema/bsdbng.yaml
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: pytest
+        name: pytest
+        entry: uv run pytest --cov=src --cov-report=term-missing -q
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]

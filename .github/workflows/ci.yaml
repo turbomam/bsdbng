@@ -15,13 +15,9 @@ jobs:
           python-version: "3.11"
           enable-cache: true
       - name: Sync environment
-        run: uv sync --all-extras --group dev
+        run: uv sync --all-extras --group dev --group qa
       - name: Run checks
         run: |
-          uv run ruff check src tests scripts
-          uv run ruff format --check src tests scripts
-          uv run mypy src tests
-          uv run pytest
-          uv run linkml validate -s schema/bsdbng.yaml
-          uv run linkml lint --config schema/.linkmllint.yaml --validate --ignore-warnings schema/bsdbng.yaml
-          uv run linkml lint --config schema/.linkmllint.yaml --ignore-warnings schema/bsdbng.yaml
+          just check
+      - name: Run full pre-commit stack
+        run: uv run pre-commit run --all-files
