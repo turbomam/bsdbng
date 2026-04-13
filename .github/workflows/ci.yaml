@@ -14,6 +14,8 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: true
+      - name: Install just
+        run: uv tool install rust-just
       - name: Sync environment
         run: uv sync --all-extras --group dev --group qa
       - name: Run checks
