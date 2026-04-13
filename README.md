@@ -40,3 +40,7 @@ The current scaffold is intentionally narrow. It establishes:
 - a deterministic command surface via `Justfile`
 
 It does not yet implement the full ingestion pipeline.
+
+## Planning notes
+
+- [BugSigDB data access methods](docs/bugsigdb-access-methods.md)
