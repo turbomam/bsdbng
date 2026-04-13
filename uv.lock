@@ -124,15 +124,15 @@ qa = [
 
 [package.metadata]
 requires-dist = [
-    { name = "linkml", specifier = ">=1.8.7" },
+    { name = "linkml", specifier = ">=1.10.0" },
     { name = "linkml-runtime", specifier = ">=1.8.3" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.2.0" },
-    { name = "pydantic", specifier = ">=2.11.0" },
+    { name = "pydantic", specifier = ">=2.13.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.0" },
-    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.12.20240917" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.10" },
+    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.12.20260408" },
 ]
 provides-extras = ["dev"]
 
@@ -142,15 +142,15 @@ dev = [
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "ruff", specifier = ">=0.11.0" },
-    { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
+    { name = "ruff", specifier = ">=0.15.10" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20260408" },
 ]
 qa = [
     { name = "bandit", extras = ["toml"], specifier = ">=1.8.3" },
     { name = "deptry", specifier = ">=0.21.1" },
     { name = "pip-audit", specifier = ">=2.10.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20260408" },
 ]
 
 [[package]]
