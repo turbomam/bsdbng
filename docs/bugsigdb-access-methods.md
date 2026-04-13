@@ -118,7 +118,8 @@ Use the other methods for narrower purposes:
 - BugSigDBExports README:
   https://github.com/waldronlab/BugSigDBExports/blob/devel/README.md
 - BugSigDB paper:
-  `/home/mark/Downloads/s41587-023-01872-y.pdf`
+  https://doi.org/10.1038/s41587-023-01872-y
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC11098749/
 - Stable releases:
   https://zenodo.org/records/15272273
   https://zenodo.org/records/13997429
