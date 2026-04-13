@@ -6,7 +6,7 @@ lintconfig := "schema/.linkmllint.yaml"
 default: check
 
 sync:
-	uv sync --all-extras --group dev
+	uv sync --all-extras --group dev --group qa
 
 lint:
 	uv run ruff check src tests scripts
@@ -25,6 +25,14 @@ test:
 install-hooks:
 	uv run pre-commit install
 
+security:
+	uv run bandit -c pyproject.toml -r src scripts
+	uv run deptry src
+	uv run pip-audit
+
+precommit:
+	uv run pre-commit run --all-files
+
 validate-schema:
 	uv run linkml validate -s {{schema}}
 
@@ -34,4 +42,4 @@ lint-schema:
 
 check-schema: validate-schema lint-schema
 
-check: lint typecheck test check-schema
+check: lint typecheck test check-schema security
