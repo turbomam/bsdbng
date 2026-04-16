@@ -2,8 +2,19 @@ set shell := ["bash", "-cu"]
 
 schema := "schema/bsdbng.yaml"
 lintconfig := "schema/.linkmllint.yaml"
+logdir := "logs"
 
 default: check
+
+# --- timed wrapper (logs wall-clock seconds per step) ---
+
+[private]
+timed step +cmd:
+	mkdir -p {{logdir}}
+	start=$(date +%s) && \
+	{{cmd}} && \
+	elapsed=$(($(date +%s) - start)) && \
+	echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) {{step}} ${elapsed}s" | tee -a {{logdir}}/pipeline.log
 
 gen-pydantic:
 	mkdir -p src/bsdbng/datamodel
@@ -55,3 +66,29 @@ lint-schema:
 check-schema: validate-schema lint-schema
 
 check: check-generated lint typecheck test check-schema security
+
+# --- pipeline steps (timed, logged) ---
+
+download:
+	just timed download "uv run python -c 'from bsdbng.download import download_exports; download_exports()'"
+
+ingest:
+	just timed ingest "uv run python -c 'from bsdbng.ingest import ingest; ingest()'"
+
+pipeline: download ingest
+
+# --- cleanup ---
+
+clean-raw:
+	rm -f data/raw/*.csv data/raw/download_provenance.json
+
+clean-studies:
+	rm -f data/studies/*.yaml
+
+clean-derived:
+	rm -f data/derived/*[!.gitkeep]
+
+clean-logs:
+	rm -f {{logdir}}/pipeline.log
+
+clean-all: clean-raw clean-studies clean-derived clean-logs

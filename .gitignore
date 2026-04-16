@@ -13,8 +13,10 @@ build/
 coverage.xml
 
 data/raw/*.csv
+data/raw/download_provenance.json
 data/studies/*.yaml
 data/derived/*
 !data/derived/.gitkeep
+logs/
 
 .DS_Store
