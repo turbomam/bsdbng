@@ -27,7 +27,9 @@ def _fetch_with_retry(client: httpx.Client, url: str) -> httpx.Response:
         resp = client.get(url)
         is_retryable = resp.status_code == 429 or resp.status_code >= 500
         if is_retryable and attempt < MAX_RETRIES - 1:
-            time.sleep(delay)
+            retry_after = resp.headers.get("Retry-After")
+            wait = float(retry_after) if retry_after and retry_after.isdigit() else delay
+            time.sleep(wait)
             delay *= 2
             continue
         resp.raise_for_status()
