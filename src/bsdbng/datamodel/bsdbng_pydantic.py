@@ -76,10 +76,10 @@ linkml_meta = LinkMLMeta({'default_prefix': 'bsdbng',
      'name': 'bsdbng',
      'prefixes': {'NCBITaxon': {'prefix_prefix': 'NCBITaxon',
                                 'prefix_reference': 'http://purl.obolibrary.org/obo/NCBITaxon_'},
+                  'bsdb': {'prefix_prefix': 'bsdb',
+                           'prefix_reference': 'https://bugsigdb.org/Study_'},
                   'bsdbng': {'prefix_prefix': 'bsdbng',
                              'prefix_reference': 'https://w3id.org/bsdbng/'},
-                  'bugsigdb': {'prefix_prefix': 'bugsigdb',
-                               'prefix_reference': 'https://bugsigdb.org/'},
                   'linkml': {'prefix_prefix': 'linkml',
                              'prefix_reference': 'https://w3id.org/linkml/'}},
      'source_file': 'schema/bsdbng.yaml',
@@ -137,6 +137,7 @@ class StudyRecord(NamedThing):
     One published microbiome study from which BugSigDB collects and standardizes microbial signatures.
     """
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
+         'id_prefixes': ['bsdb'],
          'slot_usage': {'id': {'description': 'BugSigDB study identifier, e.g. '
                                               'bsdb:10202341.',
                                'name': 'id',
@@ -184,6 +185,7 @@ class ExperimentRecord(NamedThing):
     One semantic unit within a study that records contrasted sample groups and key metadata relevant to differential abundance findings.
     """
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
+         'id_prefixes': ['bsdb'],
          'slot_usage': {'id': {'description': 'BugSigDB experiment identifier, e.g. '
                                               'bsdb:10202341/1.',
                                'name': 'id',
@@ -215,6 +217,7 @@ class SignatureRecord(NamedThing):
     A microbial signature represented as an unordered set of taxa sharing a common property or response to a study condition.
     """
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
+         'id_prefixes': ['bsdb'],
          'slot_usage': {'direction': {'name': 'direction', 'required': True},
                         'id': {'description': 'BugSigDB signature identifier, e.g. '
                                               'bsdb:10202341/1/1.',
@@ -245,6 +248,7 @@ class TaxonRecord(NamedThing):
     A taxonomic unit of any rank designating a microbial organism or group of microbial organisms.
     """
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
+         'id_prefixes': ['NCBITaxon'],
          'slot_usage': {'id': {'description': 'NCBITaxon CURIE, e.g. NCBITaxon:9606.',
                                'name': 'id',
                                'pattern': '^NCBITaxon:[0-9]+$'},

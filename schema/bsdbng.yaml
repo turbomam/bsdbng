@@ -11,8 +11,8 @@ default_range: string
 prefixes:
   linkml: https://w3id.org/linkml/
   bsdbng: https://w3id.org/bsdbng/
+  bsdb: https://bugsigdb.org/Study_
   NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
-  bugsigdb: https://bugsigdb.org/
 
 imports:
   - linkml:types
@@ -46,6 +46,8 @@ classes:
     description: >-
       One published microbiome study from which BugSigDB collects and
       standardizes microbial signatures.
+    id_prefixes:
+      - bsdb
     slots:
       - source_record_id
       - pmid
@@ -72,6 +74,8 @@ classes:
     description: >-
       One semantic unit within a study that records contrasted sample groups
       and key metadata relevant to differential abundance findings.
+    id_prefixes:
+      - bsdb
     slots:
       - experiment_name
       - group_0_name
@@ -95,6 +99,8 @@ classes:
     description: >-
       A microbial signature represented as an unordered set of taxa sharing
       a common property or response to a study condition.
+    id_prefixes:
+      - bsdb
     slots:
       - direction
     attributes:
@@ -118,6 +124,8 @@ classes:
     description: >-
       A taxonomic unit of any rank designating a microbial organism or group
       of microbial organisms.
+    id_prefixes:
+      - NCBITaxon
     slots:
       - taxon_name
       - taxonomic_rank
