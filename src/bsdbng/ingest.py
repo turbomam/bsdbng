@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -92,6 +93,7 @@ def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[P
     for study_id, study_rows in sorted(studies.items()):
         record = _build_study_record(study_id, study_rows)
         if not record["experiments"]:
+            print(f"skipped {study_id}: no valid experiments/signatures", file=sys.stderr)
             continue
         filename = study_id.replace(":", "_").replace("/", "_") + ".yaml"
         dest = study_dir / filename
