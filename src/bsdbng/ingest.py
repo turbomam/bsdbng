@@ -91,6 +91,8 @@ def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[P
     written: list[Path] = []
     for study_id, study_rows in sorted(studies.items()):
         record = _build_study_record(study_id, study_rows)
+        if not record["experiments"]:
+            continue
         filename = study_id.replace(":", "_").replace("/", "_") + ".yaml"
         dest = study_dir / filename
         dest.write_text(yaml.dump(record, default_flow_style=False, sort_keys=False))
@@ -181,25 +183,7 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
         "publication_year": pub_year,
         "doi": doi,
         "url": url,
-        "experiments": (
-            experiment_records if experiment_records else [_empty_experiment(study_id)]
-        ),
-    }
-
-
-def _empty_experiment(study_id: str) -> dict[str, object]:
-    """Return a minimal experiment placeholder when a study has no valid signatures."""
-    return {
-        "id": f"{study_id}/0",
-        "signatures": [
-            {
-                "id": f"{study_id}/0/0",
-                "direction": "increased",
-                "taxa": [
-                    {"id": "NCBITaxon:0", "taxon_name": "unknown", "taxonomic_rank": "genus"},
-                ],
-            }
-        ],
+        "experiments": experiment_records,
     }
 
 
