@@ -61,9 +61,7 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     written = ingest(raw_dir, study_dir)
     assert len(written) == 1
 
-    data = yaml.safe_load(written[0].read_text())
-    assert "studies" in data
-    study = data["studies"][0]
+    study = yaml.safe_load(written[0].read_text())
     assert study["study_id"] == "bsdb:99"
     assert study["pmid"] == 12345678
     assert study["publication_year"] == 2024
@@ -89,10 +87,10 @@ def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:
     _write_full_dump(raw_dir)
 
     written = ingest(raw_dir, study_dir)
-    data = yaml.safe_load(written[0].read_text())
+    study_data = yaml.safe_load(written[0].read_text())
 
-    from bsdbng.datamodel import BugSigDBDataset
+    from bsdbng.datamodel import StudyRecord
 
-    dataset = BugSigDBDataset.model_validate(data)
-    assert len(dataset.studies) == 1
-    assert dataset.studies[0].study_id == "bsdb:99"
+    study = StudyRecord.model_validate(study_data)
+    assert study.study_id == "bsdb:99"
+    assert study.pmid == 12345678

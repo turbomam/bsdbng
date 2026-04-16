@@ -174,20 +174,16 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
     url: str | None = url_raw if url_raw.startswith("http") else None
 
     return {
-        "studies": [
-            {
-                "study_id": study_id,
-                "source_record_id": first.get("Study", "").strip(),
-                "pmid": pmid,
-                "title": first.get("Title", "").strip() or None,
-                "publication_year": pub_year,
-                "doi": doi,
-                "url": url,
-                "experiments": (
-                    experiment_records if experiment_records else [_empty_experiment(study_id)]
-                ),
-            }
-        ],
+        "study_id": study_id,
+        "source_record_id": first.get("Study", "").strip(),
+        "pmid": pmid,
+        "title": first.get("Title", "").strip() or None,
+        "publication_year": pub_year,
+        "doi": doi,
+        "url": url,
+        "experiments": (
+            experiment_records if experiment_records else [_empty_experiment(study_id)]
+        ),
     }
 
 
