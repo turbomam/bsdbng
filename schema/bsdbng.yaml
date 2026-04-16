@@ -18,6 +18,15 @@ imports:
   - linkml:types
 
 classes:
+  NamedThing:
+    abstract: true
+    title: Named Thing
+    description: >-
+      An entity with a stable identifier. All identifiable classes in
+      this schema inherit from NamedThing.
+    slots:
+      - id
+
   BugSigDBDataset:
     tree_root: true
     title: Dataset
@@ -32,12 +41,12 @@ classes:
         description: Normalized study records in the dataset.
 
   StudyRecord:
+    is_a: NamedThing
     title: Study
     description: >-
       One published microbiome study from which BugSigDB collects and
       standardizes microbial signatures.
     slots:
-      - study_id
       - source_record_id
       - pmid
       - title
@@ -53,17 +62,17 @@ classes:
         inlined_as_list: true
         required: true
     slot_usage:
-      study_id:
-        identifier: true
-        required: true
+      id:
+        pattern: "^bsdb:[0-9]+$"
+        description: BugSigDB study identifier, e.g. bsdb:10202341.
 
   ExperimentRecord:
+    is_a: NamedThing
     title: Experiment
     description: >-
       One semantic unit within a study that records contrasted sample groups
       and key metadata relevant to differential abundance findings.
     slots:
-      - experiment_id
       - experiment_name
       - group_0_name
       - group_1_name
@@ -76,17 +85,17 @@ classes:
         inlined_as_list: true
         required: true
     slot_usage:
-      experiment_id:
-        identifier: true
-        required: true
+      id:
+        pattern: "^bsdb:[0-9]+/[0-9]+$"
+        description: BugSigDB experiment identifier, e.g. bsdb:10202341/1.
 
   SignatureRecord:
+    is_a: NamedThing
     title: Signature
     description: >-
       A microbial signature represented as an unordered set of taxa sharing
       a common property or response to a study condition.
     slots:
-      - signature_id
       - direction
     attributes:
       taxa:
@@ -97,40 +106,48 @@ classes:
         inlined_as_list: true
         required: true
     slot_usage:
-      signature_id:
-        identifier: true
-        required: true
+      id:
+        pattern: "^bsdb:[0-9]+/[0-9]+/[0-9]+$"
+        description: BugSigDB signature identifier, e.g. bsdb:10202341/1/1.
       direction:
         required: true
 
   TaxonRecord:
+    is_a: NamedThing
     title: Taxon
     description: >-
       A taxonomic unit of any rank designating a microbial organism or group
       of microbial organisms.
     slots:
-      - taxon_id
       - taxon_name
       - taxonomic_rank
     slot_usage:
-      taxon_id:
-        required: true
+      id:
+        pattern: "^NCBITaxon:[0-9]+$"
+        description: NCBITaxon CURIE, e.g. NCBITaxon:9606.
       taxon_name:
         required: true
       taxonomic_rank:
         required: true
 
 slots:
-  study_id:
-    title: Study ID
-    description: BugSigDB study identifier.
-    pattern: "^.+$"
+  id:
+    identifier: true
+    required: true
+    title: ID
+    description: Stable identifier for this entity.
 
   source_record_id:
     title: Source Record ID
     description: Study identifier exactly as exported by BugSigDB.
     range: string
     required: true
+
+  pmid:
+    title: PMID
+    description: PubMed identifier for the study.
+    range: integer
+    minimum_value: 1
 
   title:
     title: Title
@@ -144,12 +161,6 @@ slots:
     minimum_value: 1900
     maximum_value: 2100
 
-  pmid:
-    title: PMID
-    description: PubMed identifier for the study.
-    range: integer
-    minimum_value: 1
-
   doi:
     title: DOI
     description: Digital object identifier for the study.
@@ -160,11 +171,6 @@ slots:
     title: URL
     description: Stable URL for the study when no DOI or PMID is available.
     range: uri
-
-  experiment_id:
-    title: Experiment ID
-    description: Experiment identifier.
-    pattern: "^.+$"
 
   experiment_name:
     title: Experiment Name
@@ -181,21 +187,11 @@ slots:
     description: Label for the other contrasted sample group.
     range: string
 
-  signature_id:
-    title: Signature ID
-    description: Signature identifier.
-    pattern: "^.+$"
-
   direction:
     title: Direction
     description: Reported direction of abundance change for taxa in the signature.
     range: DirectionEnum
     required: true
-
-  taxon_id:
-    title: Taxon ID
-    description: NCBITaxon CURIE for the reported taxon.
-    pattern: "^NCBITaxon:[0-9]+$"
 
   taxon_name:
     title: Taxon Name

@@ -62,22 +62,22 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     assert len(written) == 1
 
     study = yaml.safe_load(written[0].read_text())
-    assert study["study_id"] == "bsdb:99"
+    assert study["id"] == "bsdb:99"
     assert study["pmid"] == 12345678
     assert study["publication_year"] == 2024
     assert study["doi"] == "10.1234/test"
     assert len(study["experiments"]) == 1
 
     exp = study["experiments"][0]
-    assert exp["experiment_id"] == "bsdb:99/1"
+    assert exp["id"] == "bsdb:99/1"
     assert len(exp["signatures"]) == 2
 
     sig_increased = next(s for s in exp["signatures"] if s["direction"] == "increased")
     assert len(sig_increased["taxa"]) == 2
-    assert sig_increased["taxa"][0]["taxon_id"] == "NCBITaxon:9606"
+    assert sig_increased["taxa"][0]["id"] == "NCBITaxon:9606"
 
     sig_decreased = next(s for s in exp["signatures"] if s["direction"] == "decreased")
-    assert sig_decreased["taxa"][0]["taxon_id"] == "NCBITaxon:5678"
+    assert sig_decreased["taxa"][0]["id"] == "NCBITaxon:5678"
 
 
 def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:
@@ -92,5 +92,5 @@ def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:
     from bsdbng.datamodel import StudyRecord
 
     study = StudyRecord.model_validate(study_data)
-    assert study.study_id == "bsdb:99"
+    assert study.id == "bsdb:99"
     assert study.pmid == 12345678

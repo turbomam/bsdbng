@@ -138,7 +138,7 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
 
             sig_records.append(
                 {
-                    "signature_id": sig_id,
+                    "id": sig_id,
                     "direction": direction,
                     "taxa": taxa,
                 }
@@ -149,7 +149,7 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
 
         experiment_records.append(
             {
-                "experiment_id": exp_id,
+                "id": exp_id,
                 "experiment_name": exp_first.get("Experiment", "").strip() or None,
                 "group_0_name": exp_first.get("Group 0 name", "").strip() or None,
                 "group_1_name": exp_first.get("Group 1 name", "").strip() or None,
@@ -174,7 +174,7 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
     url: str | None = url_raw if url_raw.startswith("http") else None
 
     return {
-        "study_id": study_id,
+        "id": study_id,
         "source_record_id": first.get("Study", "").strip(),
         "pmid": pmid,
         "title": first.get("Title", "").strip() or None,
@@ -190,13 +190,13 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
 def _empty_experiment(study_id: str) -> dict[str, object]:
     """Return a minimal experiment placeholder when a study has no valid signatures."""
     return {
-        "experiment_id": f"{study_id}/0",
+        "id": f"{study_id}/0",
         "signatures": [
             {
-                "signature_id": f"{study_id}/0/0",
+                "id": f"{study_id}/0/0",
                 "direction": "increased",
                 "taxa": [
-                    {"taxon_id": "NCBITaxon:0", "taxon_name": "unknown", "taxonomic_rank": "genus"},
+                    {"id": "NCBITaxon:0", "taxon_name": "unknown", "taxonomic_rank": "genus"},
                 ],
             }
         ],
@@ -223,7 +223,7 @@ def _parse_taxa(tax_ids: str, names: str) -> list[dict[str, str]]:
         rank = _taxon_name_to_rank(name)
         taxa.append(
             {
-                "taxon_id": curie,
+                "id": curie,
                 "taxon_name": name,
                 "taxonomic_rank": rank,
             }
