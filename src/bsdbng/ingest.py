@@ -162,17 +162,27 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
     if year_str.isdigit():
         pub_year = int(year_str)
 
+    pmid_raw = first.get("PMID", "").strip()
+    pmid: int | None = int(pmid_raw) if pmid_raw.isdigit() else None
+
     doi_raw = first.get("DOI", "").strip()
-    doi: str | None = doi_raw if doi_raw.startswith("10.") else None
+    # Some DOIs are stored as full URLs — normalize to bare DOI
+    doi_clean = doi_raw.removeprefix("https://doi.org/").removeprefix("http://doi.org/")
+    doi: str | None = doi_clean if doi_clean.startswith("10.") else None
+
+    url_raw = first.get("URL", "").strip()
+    url: str | None = url_raw if url_raw.startswith("http") else None
 
     return {
         "studies": [
             {
                 "study_id": study_id,
                 "source_record_id": first.get("Study", "").strip(),
+                "pmid": pmid,
                 "title": first.get("Title", "").strip() or None,
                 "publication_year": pub_year,
                 "doi": doi,
+                "url": url,
                 "experiments": (
                     experiment_records if experiment_records else [_empty_experiment(study_id)]
                 ),

@@ -65,6 +65,7 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     assert "studies" in data
     study = data["studies"][0]
     assert study["study_id"] == "bsdb:99"
+    assert study["pmid"] == 12345678
     assert study["publication_year"] == 2024
     assert study["doi"] == "10.1234/test"
     assert len(study["experiments"]) == 1

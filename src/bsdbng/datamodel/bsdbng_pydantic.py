@@ -133,9 +133,11 @@ class StudyRecord(ConfiguredBaseModel):
 
     study_id: str = Field(default=..., title="Study ID", description="""BugSigDB study identifier.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
     source_record_id: str = Field(default=..., title="Source Record ID", description="""Study identifier exactly as exported by BugSigDB.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
+    pmid: Optional[int] = Field(default=None, title="PMID", description="""PubMed identifier for the study.""", ge=1, json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
     title: Optional[str] = Field(default=None, title="Title", description="""Study title.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
     publication_year: Optional[int] = Field(default=None, title="Publication Year", description="""Publication year.""", ge=1900, le=2100, json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
     doi: Optional[str] = Field(default=None, title="DOI", description="""Digital object identifier for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
+    url: Optional[str] = Field(default=None, title="URL", description="""Stable URL for the study when no DOI or PMID is available.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
     experiments: list[ExperimentRecord] = Field(default=..., title="Experiments", description="""Semantic experiment units recorded for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
 
     @field_validator('study_id')

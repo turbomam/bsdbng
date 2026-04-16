@@ -39,9 +39,11 @@ classes:
     slots:
       - study_id
       - source_record_id
+      - pmid
       - title
       - publication_year
       - doi
+      - url
     attributes:
       experiments:
         title: Experiments
@@ -142,11 +144,22 @@ slots:
     minimum_value: 1900
     maximum_value: 2100
 
+  pmid:
+    title: PMID
+    description: PubMed identifier for the study.
+    range: integer
+    minimum_value: 1
+
   doi:
     title: DOI
     description: Digital object identifier for the study.
     range: string
     pattern: "^10\\..+$"
+
+  url:
+    title: URL
+    description: Stable URL for the study when no DOI or PMID is available.
+    range: uri
 
   experiment_id:
     title: Experiment ID
