@@ -12,6 +12,7 @@ authors = [
   { name = "Mark Miller" }
 ]
 dependencies = [
+  "httpx>=0.28.0",
   "linkml>=1.10.0",
   "linkml-runtime>=1.8.3",
   "pydantic>=2.13.0",
@@ -91,7 +92,10 @@ exclude = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra -m 'not integration'"
+markers = [
+  "integration: tests that require network access or external services",
+]
 
 [tool.codespell]
 skip = [
