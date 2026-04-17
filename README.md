@@ -2,45 +2,146 @@
 
 `bsdbng` is a clean-room BugSigDB ingestion and normalization project.
 
-The initial design constraints are:
+It downloads [BugSigDB](https://bugsigdb.org) data, parses it into
+per-study YAML files validated against a [LinkML](https://linkml.io) schema,
+and provides a foundation for trait aggregation and phenotype cross-referencing.
 
-- one canonical schema
-- one canonical per-study YAML artifact
-- the smallest practical set of durable file types
-- strict Python and LinkML guardrails from the first commit
+## Quick start
 
-## Guardrails
+### Prerequisites
 
-- `uv` for environment and dependency management
-- `just` for stable developer commands
-- `ruff` for linting and formatting checks
-- `mypy --strict` for type checking
-- `pytest` for tests
-- `bandit` for Python security linting
-- `deptry` for dependency hygiene
-- `pip-audit` for vulnerability scanning
-- `linkml lint` and `linkml validate` for schema checks
-- CI runs the full check suite on every push and PR
+You need two tools installed. Everything else is managed automatically.
 
-## Intended artifacts
+| Tool | What it does | Install |
+|------|-------------|---------|
+| **[uv](https://docs.astral.sh/uv/)** | Python environment and dependency management | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| **[just](https://just.systems)** | Command runner (like make, but simpler) | `cargo install just` or `brew install just` or [other options](https://just.systems/man/en/packages.html) |
 
-- `data/raw/*.csv`
-  BugSigDB source exports
-- `data/studies/*.yaml`
-  canonical per-study records
-- `data/derived/`
-  optional aggregate artifacts, only when they are materially necessary
+> **Windows users**: both `uv` and `just` work on Windows.
+> See [uv Windows install](https://docs.astral.sh/uv/getting-started/installation/#windows)
+> and [just Windows install](https://just.systems/man/en/packages.html).
+> If you use WSL, the Linux instructions apply.
 
-## Current scope
+### Clone and run
 
-The current scaffold is intentionally narrow. It establishes:
+```bash
+git clone https://github.com/turbomam/bsdbng.git
+cd bsdbng
+uv sync --all-extras --group dev --group qa
+just check       # run all checks (should pass on a fresh clone)
+just download    # download BugSigDB data (~28 MB, ~6s)
+just ingest      # parse into per-study YAML (~22s, 1900+ studies)
+```
 
-- a strict LinkML schema for normalized BugSigDB records
-- a typed Python package layout
-- a deterministic command surface via `Justfile`
+That's it. After `just ingest`, look at `data/studies/` for the output.
 
-It does not yet implement the full ingestion pipeline.
+### Explore the data
 
-## Planning notes
+Install [yq](https://github.com/mikefarah/yq) (Mike Farah's Go version,
+not the Python one) to query YAML from the command line:
 
+```bash
+# Find a study by PMID
+grep -l "pmid: 10202341" data/studies/*.yaml
+
+# Show taxa in a study
+yq '.experiments[].signatures[].taxa[].taxon_name' data/studies/bsdb_10202341.yaml
+
+# Count studies
+ls data/studies/*.yaml | wc -l
+```
+
+## Developer commands
+
+All commands go through the Justfile. Run `just --list` to see them all.
+
+| Command | What it does |
+|---------|-------------|
+| `just check` | Run all checks (ruff, mypy, pytest, linkml, bandit, deptry, pip-audit) |
+| `just download` | Download BugSigDB CSVs (with caching and retry) |
+| `just ingest` | Parse CSVs into per-study YAML |
+| `just pipeline` | Run download + ingest |
+| `just clean-all` | Remove all generated artifacts |
+| `just format` | Auto-fix lint and formatting |
+| `just test` | Run tests only |
+| `just lint` | Run linter only |
+
+Every pipeline step is timed and logged to `logs/pipeline.log`.
+
+## Contributing
+
+### Workflow
+
+1. Pick an [open issue](https://github.com/turbomam/bsdbng/issues)
+2. Create a branch: `git checkout -b issue-<number>-<short-slug>`
+3. Make your changes
+4. Run `just check` — **all checks must pass before opening a PR**
+5. Commit and push
+6. Open a PR that references the issue (e.g., "Closes #30")
+
+### Using LLMs
+
+LLM-generated code is welcome — the guardrails don't care who wrote the code.
+But the code must pass `just check` before committing. The workflow is:
+
+1. Generate code (Claude Code, Copilot, ChatGPT, whatever)
+2. Run `just check`
+3. Fix any failures
+4. Commit
+
+Do not commit code that hasn't passed `just check`. Do not skip checks.
+If a check seems wrong, open an issue to discuss changing the check.
+
+### File types
+
+This project uses a minimal set of file types:
+
+- **CSV** — raw BugSigDB input (downloaded, not committed)
+- **YAML** — per-study output and schema definition
+- **Python** — source code and tests
+- **JSON** — provenance and ingest logs (generated, not committed)
+
+No DuckDB, no Parquet, no Jupyter notebooks in this repo.
+
+## Project structure
+
+```
+bsdbng/
+  schema/bsdbng.yaml              # LinkML schema (source of truth)
+  src/bsdbng/
+    download.py                    # BugSigDB CSV download with caching
+    ingest.py                      # CSV → per-study YAML pipeline
+    datamodel/bsdbng_pydantic.py   # generated Pydantic models (do not edit)
+    paths.py                       # project path constants
+  tests/                           # pytest tests
+  data/
+    raw/                           # downloaded CSVs (gitignored)
+    studies/                       # per-study YAML output (gitignored)
+    derived/                       # aggregate artifacts (gitignored)
+  Justfile                         # developer commands
+  pyproject.toml                   # project config
+  logs/                            # pipeline timing logs (gitignored)
+```
+
+## Schema
+
+The schema defines four entity types, all inheriting from `NamedThing`:
+
+- **Study** — one published microbiome study (tree root)
+- **Experiment** — a contrasted-group comparison within a study
+- **Signature** — a set of taxa with a shared direction (increased/decreased)
+- **Taxon** — a microbial organism identified by NCBITaxon CURIE
+
+See `schema/bsdbng.yaml` for the full definition.
+
+## Data quality
+
+The ingest pipeline logs every data drop and transformation assumption to
+`data/derived/ingest_log.json`. See [#44](https://github.com/turbomam/bsdbng/issues/44)
+for the full audit of what gets discarded and why.
+
+## Background
+
+- [Where bsdbng came from](docs/origin-story.md) — how this repo relates to the
+  KG-Microbe-search prototype and how to talk about your contributions
 - [BugSigDB data access methods](docs/bugsigdb-access-methods.md)
