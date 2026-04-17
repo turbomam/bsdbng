@@ -234,17 +234,67 @@ def _build_study_record(
     pub_year: int | None = None
     if year_str.isdigit():
         pub_year = int(year_str)
+    elif year_str and year_str not in ("", "NA"):
+        log.append(
+            {
+                "level": "info",
+                "entity": "study",
+                "id": study_id,
+                "reason": f"non-numeric publication year dropped: {year_str!r}",
+            }
+        )
 
     pmid_raw = first.get("PMID", "").strip()
-    pmid: int | None = int(pmid_raw) if pmid_raw.isdigit() else None
+    pmid: int | None = None
+    if pmid_raw.isdigit():
+        pmid = int(pmid_raw)
+    elif pmid_raw and pmid_raw not in ("", "NA"):
+        log.append(
+            {
+                "level": "info",
+                "entity": "study",
+                "id": study_id,
+                "reason": f"non-numeric PMID dropped: {pmid_raw!r}",
+            }
+        )
 
     doi_raw = first.get("DOI", "").strip()
-    # Some DOIs are stored as full URLs — normalize to bare DOI
     doi_clean = doi_raw.removeprefix("https://doi.org/").removeprefix("http://doi.org/")
-    doi: str | None = doi_clean if doi_clean.startswith("10.") else None
+    doi: str | None = None
+    if doi_clean.startswith("10."):
+        doi = doi_clean
+        if doi_clean != doi_raw and doi_raw not in ("", "NA"):
+            log.append(
+                {
+                    "level": "info",
+                    "entity": "study",
+                    "id": study_id,
+                    "reason": f"DOI normalized from URL: {doi_raw!r} → {doi_clean!r}",
+                }
+            )
+    elif doi_raw and doi_raw not in ("", "NA"):
+        log.append(
+            {
+                "level": "info",
+                "entity": "study",
+                "id": study_id,
+                "reason": f"unrecognized DOI format dropped: {doi_raw!r}",
+            }
+        )
 
     url_raw = first.get("URL", "").strip()
-    url: str | None = url_raw if url_raw.startswith("http") else None
+    url: str | None = None
+    if url_raw.startswith("http"):
+        url = url_raw
+    elif url_raw and url_raw not in ("", "NA"):
+        log.append(
+            {
+                "level": "info",
+                "entity": "study",
+                "id": study_id,
+                "reason": f"non-HTTP URL dropped: {url_raw!r}",
+            }
+        )
 
     return {
         "id": study_id,
@@ -300,7 +350,19 @@ def _parse_taxa(
             )
             continue
 
-        name = name_list[i] if i < len(name_list) else f"taxon_{tid_clean}"
+        if i < len(name_list):
+            name = name_list[i]
+        else:
+            name = f"taxon_{tid_clean}"
+            log.append(
+                {
+                    "level": "info",
+                    "entity": "taxon",
+                    "id": curie,
+                    "signature": sig_id,
+                    "reason": f"no name at index {i}, using placeholder: {name!r}",
+                }
+            )
         rank = _taxon_name_to_rank(name)
         taxa.append(
             {
