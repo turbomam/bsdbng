@@ -1,21 +1,19 @@
 """Generated data models for bsdbng."""
 
 from .bsdbng_pydantic import (
-    BugSigDBDataset,
     DirectionEnum,
-    ExperimentRecord,
-    SignatureRecord,
-    StudyRecord,
+    Experiment,
+    Signature,
+    Study,
+    Taxon,
     TaxonomicRankEnum,
-    TaxonRecord,
 )
 
 __all__ = [
-    "BugSigDBDataset",
     "DirectionEnum",
-    "ExperimentRecord",
-    "SignatureRecord",
-    "StudyRecord",
-    "TaxonRecord",
+    "Experiment",
+    "Signature",
+    "Study",
+    "Taxon",
     "TaxonomicRankEnum",
 ]

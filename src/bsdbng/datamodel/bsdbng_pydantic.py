@@ -121,18 +121,7 @@ class NamedThing(ConfiguredBaseModel):
     id: str = Field(default=..., title="ID", description="""Stable identifier for this entity.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
 
-class BugSigDBDataset(ConfiguredBaseModel):
-    """
-    Collection of normalized BugSigDB study records.
-    """
-    linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
-         'title': 'Dataset',
-         'tree_root': True})
-
-    studies: list[StudyRecord] = Field(default=..., title="Study records", description="""Normalized study records in the dataset.""", json_schema_extra = { "linkml_meta": {'domain_of': ['BugSigDBDataset']} })
-
-
-class StudyRecord(NamedThing):
+class Study(NamedThing):
     """
     One published microbiome study from which BugSigDB collects and standardizes microbial signatures.
     """
@@ -142,15 +131,16 @@ class StudyRecord(NamedThing):
                                               'bsdb:10202341.',
                                'name': 'id',
                                'pattern': '^bsdb:[0-9]+$'}},
-         'title': 'Study'})
+         'title': 'Study',
+         'tree_root': True})
 
-    source_record_id: str = Field(default=..., title="Source Record ID", description="""Study identifier exactly as exported by BugSigDB.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    pmid: Optional[int] = Field(default=None, title="PMID", description="""PubMed identifier for the study.""", ge=1, json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    title: Optional[str] = Field(default=None, title="Title", description="""Study title.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    publication_year: Optional[int] = Field(default=None, title="Publication Year", description="""Publication year.""", ge=1900, le=2100, json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    doi: Optional[str] = Field(default=None, title="DOI", description="""Digital object identifier for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    url: Optional[str] = Field(default=None, title="URL", description="""Stable URL for the study when no DOI or PMID is available.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
-    experiments: list[ExperimentRecord] = Field(default=..., title="Experiments", description="""Semantic experiment units recorded for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['StudyRecord']} })
+    source_record_id: str = Field(default=..., title="Source Record ID", description="""Study identifier exactly as exported by BugSigDB.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    pmid: Optional[int] = Field(default=None, title="PMID", description="""PubMed identifier for the study.""", ge=1, json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    title: Optional[str] = Field(default=None, title="Title", description="""Study title.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    publication_year: Optional[int] = Field(default=None, title="Publication Year", description="""Publication year.""", ge=1900, le=2100, json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    doi: Optional[str] = Field(default=None, title="DOI", description="""Digital object identifier for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    url: Optional[str] = Field(default=None, title="URL", description="""Stable URL for the study when no DOI or PMID is available.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    experiments: list[Experiment] = Field(default=..., title="Experiments", description="""Semantic experiment units recorded for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB study identifier, e.g. bsdb:10202341.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('doi')
@@ -180,7 +170,7 @@ class StudyRecord(NamedThing):
         return v
 
 
-class ExperimentRecord(NamedThing):
+class Experiment(NamedThing):
     """
     One semantic unit within a study that records contrasted sample groups and key metadata relevant to differential abundance findings.
     """
@@ -192,10 +182,10 @@ class ExperimentRecord(NamedThing):
                                'pattern': '^bsdb:[0-9]+/[0-9]+$'}},
          'title': 'Experiment'})
 
-    experiment_name: Optional[str] = Field(default=None, title="Experiment Name", description="""Label for the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['ExperimentRecord']} })
-    group_0_name: Optional[str] = Field(default=None, title="Group 0 Name", description="""Label for one of the contrasted sample groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['ExperimentRecord']} })
-    group_1_name: Optional[str] = Field(default=None, title="Group 1 Name", description="""Label for the other contrasted sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['ExperimentRecord']} })
-    signatures: list[SignatureRecord] = Field(default=..., title="Signatures", description="""Signatures associated with the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['ExperimentRecord']} })
+    experiment_name: Optional[str] = Field(default=None, title="Experiment Name", description="""Label for the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_0_name: Optional[str] = Field(default=None, title="Group 0 Name", description="""Label for one of the contrasted sample groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_1_name: Optional[str] = Field(default=None, title="Group 1 Name", description="""Label for the other contrasted sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    signatures: list[Signature] = Field(default=..., title="Signatures", description="""Signatures associated with the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB experiment identifier, e.g. bsdb:10202341/1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('id')
@@ -212,7 +202,7 @@ class ExperimentRecord(NamedThing):
         return v
 
 
-class SignatureRecord(NamedThing):
+class Signature(NamedThing):
     """
     A microbial signature represented as an unordered set of taxa sharing a common property or response to a study condition.
     """
@@ -225,8 +215,8 @@ class SignatureRecord(NamedThing):
                                'pattern': '^bsdb:[0-9]+/[0-9]+/[0-9]+$'}},
          'title': 'Signature'})
 
-    direction: DirectionEnum = Field(default=..., title="Direction", description="""Reported direction of abundance change for taxa in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['SignatureRecord']} })
-    taxa: list[TaxonRecord] = Field(default=..., title="Taxa", description="""Taxa listed in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['SignatureRecord']} })
+    direction: DirectionEnum = Field(default=..., title="Direction", description="""Reported direction of abundance change for taxa in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
+    taxa: list[Taxon] = Field(default=..., title="Taxa", description="""Taxa listed in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB signature identifier, e.g. bsdb:10202341/1/1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('id')
@@ -243,7 +233,7 @@ class SignatureRecord(NamedThing):
         return v
 
 
-class TaxonRecord(NamedThing):
+class Taxon(NamedThing):
     """
     A taxonomic unit of any rank designating a microbial organism or group of microbial organisms.
     """
@@ -251,14 +241,18 @@ class TaxonRecord(NamedThing):
          'id_prefixes': ['NCBITaxon'],
          'slot_usage': {'id': {'description': 'NCBITaxon CURIE, e.g. NCBITaxon:9606.',
                                'name': 'id',
-                               'pattern': '^NCBITaxon:[0-9]+$'},
+                               'pattern': '^NCBITaxon:[0-9]+$',
+                               'recommended': True,
+                               'required': False},
                         'taxon_name': {'name': 'taxon_name', 'required': True},
-                        'taxonomic_rank': {'name': 'taxonomic_rank', 'required': True}},
+                        'taxonomic_rank': {'name': 'taxonomic_rank',
+                                           'recommended': True,
+                                           'required': False}},
          'title': 'Taxon'})
 
-    taxon_name: str = Field(default=..., title="Taxon Name", description="""Reported taxon label.""", json_schema_extra = { "linkml_meta": {'domain_of': ['TaxonRecord']} })
-    taxonomic_rank: TaxonomicRankEnum = Field(default=..., title="Taxonomic Rank", description="""Taxonomic rank of the reported taxon.""", json_schema_extra = { "linkml_meta": {'domain_of': ['TaxonRecord']} })
-    id: str = Field(default=..., title="ID", description="""NCBITaxon CURIE, e.g. NCBITaxon:9606.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
+    taxon_name: str = Field(default=..., title="Taxon Name", description="""Reported taxon label.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Taxon']} })
+    taxonomic_rank: Optional[TaxonomicRankEnum] = Field(default=None, title="Taxonomic Rank", description="""Taxonomic rank of the reported taxon.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Taxon'], 'recommended': True} })
+    id: str = Field(default=..., title="ID", description="""NCBITaxon CURIE, e.g. NCBITaxon:9606.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing'], 'recommended': True} })
 
     @field_validator('id')
     def pattern_id(cls, v):
@@ -277,8 +271,7 @@ class TaxonRecord(NamedThing):
 # Model rebuild
 # see https://pydantic-docs.helpmanual.io/usage/models/#rebuilding-a-model
 NamedThing.model_rebuild()
-BugSigDBDataset.model_rebuild()
-StudyRecord.model_rebuild()
-ExperimentRecord.model_rebuild()
-SignatureRecord.model_rebuild()
-TaxonRecord.model_rebuild()
+Study.model_rebuild()
+Experiment.model_rebuild()
+Signature.model_rebuild()
+Taxon.model_rebuild()

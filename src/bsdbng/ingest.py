@@ -132,9 +132,8 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
             taxa_str = row.get("NCBI Taxonomy IDs", "")
             names_str = row.get("MetaPhlAn taxance", "") or row.get("Taxon", "") or ""
             direction_raw = (row.get("Abundance in Group 1", "") or "").strip().lower()
-            direction = (
-                direction_raw if direction_raw in ("increased", "decreased") else "increased"
-            )
+            if direction_raw not in ("increased", "decreased"):
+                continue
 
             taxa = _parse_taxa(taxa_str, names_str)
             if not taxa:
@@ -143,7 +142,7 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
             sig_records.append(
                 {
                     "id": sig_id,
-                    "direction": direction,
+                    "direction": direction_raw,
                     "taxa": taxa,
                 }
             )

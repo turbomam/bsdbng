@@ -27,21 +27,9 @@ classes:
     slots:
       - id
 
-  BugSigDBDataset:
-    tree_root: true
-    title: Dataset
-    description: Collection of normalized BugSigDB study records.
-    attributes:
-      studies:
-        title: Study records
-        range: StudyRecord
-        multivalued: true
-        inlined_as_list: true
-        required: true
-        description: Normalized study records in the dataset.
-
-  StudyRecord:
+  Study:
     is_a: NamedThing
+    tree_root: true
     title: Study
     description: >-
       One published microbiome study from which BugSigDB collects and
@@ -59,7 +47,7 @@ classes:
       experiments:
         title: Experiments
         description: Semantic experiment units recorded for the study.
-        range: ExperimentRecord
+        range: Experiment
         multivalued: true
         inlined_as_list: true
         required: true
@@ -68,7 +56,7 @@ classes:
         pattern: "^bsdb:[0-9]+$"
         description: BugSigDB study identifier, e.g. bsdb:10202341.
 
-  ExperimentRecord:
+  Experiment:
     is_a: NamedThing
     title: Experiment
     description: >-
@@ -84,7 +72,7 @@ classes:
       signatures:
         title: Signatures
         description: Signatures associated with the experiment.
-        range: SignatureRecord
+        range: Signature
         multivalued: true
         inlined_as_list: true
         required: true
@@ -93,7 +81,7 @@ classes:
         pattern: "^bsdb:[0-9]+/[0-9]+$"
         description: BugSigDB experiment identifier, e.g. bsdb:10202341/1.
 
-  SignatureRecord:
+  Signature:
     is_a: NamedThing
     title: Signature
     description: >-
@@ -107,7 +95,7 @@ classes:
       taxa:
         title: Taxa
         description: Taxa listed in the signature.
-        range: TaxonRecord
+        range: Taxon
         multivalued: true
         inlined_as_list: true
         required: true
@@ -118,7 +106,7 @@ classes:
       direction:
         required: true
 
-  TaxonRecord:
+  Taxon:
     is_a: NamedThing
     title: Taxon
     description: >-
@@ -133,10 +121,13 @@ classes:
       id:
         pattern: "^NCBITaxon:[0-9]+$"
         description: NCBITaxon CURIE, e.g. NCBITaxon:9606.
+        recommended: true
+        required: false
       taxon_name:
         required: true
       taxonomic_rank:
-        required: true
+        recommended: true
+        required: false
 
 slots:
   id:
