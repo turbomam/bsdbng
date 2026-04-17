@@ -122,4 +122,3 @@ bsdbng takes the proven concepts and packages them with:
   discovered during prototyping
 - **HTTP caching** with ETag/If-Modified-Since for efficient re-downloads
 - **A reproducible command surface** via Justfile
-
