@@ -205,7 +205,7 @@ def _build_study_record(
         for row in exp_rows:
             sig_id = _parse_signature_id(row.get("BSDB ID", ""))
             taxa_str = row.get("NCBI Taxonomy IDs", "")
-            names_str = row.get("MetaPhlAn taxance", "") or row.get("Taxon", "") or ""
+            names_str = row.get("MetaPhlAn taxon names", "") or row.get("Taxon", "") or ""
             direction_raw = (row.get("Abundance in Group 1", "") or "").strip().lower()
             if direction_raw not in ("increased", "decreased"):
                 log.append(
