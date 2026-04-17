@@ -10,32 +10,75 @@ those findings into a schema-first, guardrails-first pipeline.
 
 ## What the prototyping proved
 
-The KG-Microbe-search work demonstrated that:
+Each finding below links to the specific prototype artifact that
+demonstrated it, and the bsdbng code that builds on it.
 
-1. **BugSigDB data can be structured into per-study records** with
-   nested experiments, signatures, and taxa. This hierarchy was discovered
-   through hands-on exploration of the BugSigDB CSV exports.
+### 1. BugSigDB data can be structured into per-study records
 
-2. **LinkML schemas can validate BugSigDB data**. A schema was written
-   and used with `linkml validate` to check study outputs against a
-   formal specification.
+The prototype organized studies into per-study directories with nested
+experiments, signatures, and taxa. This hierarchy was discovered through
+hands-on data exploration.
 
-3. **Trait profile tables can be generated from structured study data**.
-   A script was built to produce wide and long TSV formats summarizing
-   taxa and their abundance directions across studies.
+- Prototype: [colorectal-cancer-studies/](https://github.com/CultureBotAI/KG-Microbe-search/tree/main/colorectal-cancer-studies) —
+  per-study folders with `analysis_results.yaml`, metadata, and taxa files
+- bsdbng: `schema/bsdbng.yaml` — the Study → Experiment → Signature → Taxon
+  hierarchy formalized as a LinkML schema
 
-4. **KG-Microbe phenotype data can be cross-referenced with BugSigDB taxa**.
-   An analysis pipeline looked up taxa in KG-Microbe's knowledge graph
-   edges to find phenotypic traits associated with differentially abundant
-   organisms.
+### 2. LinkML schemas can validate BugSigDB data
 
-5. **BugSigDB uses MetaPhlAn lineage encoding** — pipes separate
-   taxonomic levels within one taxon, semicolons separate distinct taxa.
-   This is not documented in BugSigDB's own docs and was learned through
-   data exploration.
+A schema was written and used with `linkml validate` to check study
+outputs against a formal specification. Valid and invalid example files
+were created to test the schema.
 
-6. **1,743 BugSigDB studies were successfully analyzed**, validating the
-   approach at scale.
+- Prototype: [schema/bugsigdb_kgmicrobe_schema.yaml](https://github.com/CultureBotAI/KG-Microbe-search/blob/main/schema/bugsigdb_kgmicrobe_schema.yaml) —
+  the first BugSigDB LinkML schema
+- Prototype: [schema/valid example output yaml/](https://github.com/CultureBotAI/KG-Microbe-search/tree/main/schema/valid%20example%20output%20yaml) and
+  [schema/invalid example output yaml/](https://github.com/CultureBotAI/KG-Microbe-search/tree/main/schema/invalid%20example%20output%20yaml) —
+  test data files
+- bsdbng: `schema/bsdbng.yaml` — refined schema with NamedThing inheritance,
+  id_prefixes, per-class patterns, and Pydantic validation on write
+
+### 3. Trait profile tables can be generated from structured study data
+
+A script was built to produce wide and long TSV formats summarizing
+taxa and their abundance directions across studies.
+
+- Prototype: [Studies/reshape_trait_profiles.py](https://github.com/CultureBotAI/KG-Microbe-search/blob/main/Studies/reshape_trait_profiles.py)
+  and the universal generator on branch
+  [updated-noel-tsv](https://github.com/CultureBotAI/KG-Microbe-search/tree/updated-noel-tsv)
+- bsdbng: issue [#30](https://github.com/turbomam/bsdbng/issues/30) —
+  the same capability, reading from schema-validated YAML
+
+### 4. KG-Microbe phenotype data can be cross-referenced with BugSigDB taxa
+
+An analysis pipeline looked up taxa in KG-Microbe's knowledge graph
+to find phenotypic traits associated with differentially abundant organisms.
+
+- Prototype: [scripts/analyze_taxa.py](https://github.com/CultureBotAI/KG-Microbe-search/blob/main/scripts/analyze_taxa.py) —
+  taxa lookup against KG-Microbe edges.tsv and nodes.tsv
+- Prototype: [bugsigdb-analysis-prompt-template.md](https://github.com/CultureBotAI/KG-Microbe-search/blob/main/bugsigdb-analysis-prompt-template.md) —
+  LLM prompt for BugSigDB taxa extraction and KG-Microbe analysis
+- bsdbng: issue [#31](https://github.com/turbomam/bsdbng/issues/31) —
+  deterministic version of the same cross-referencing
+
+### 5. BugSigDB uses MetaPhlAn lineage encoding
+
+Pipes separate taxonomic levels within one taxon, semicolons separate
+distinct taxa. This is not documented in BugSigDB's own exports and was
+learned through data exploration.
+
+- Prototype: discovered through analysis of the CSV data and the
+  [MetaPhlAn taxon names column](https://github.com/CultureBotAI/KG-Microbe-search/blob/main/schema/YAML_CONVERSION_GUIDE.md)
+- bsdbng: `src/bsdbng/ingest.py`, function `_parse_taxa` — implements
+  correct semicolon/pipe parsing with the `METAPHLAN_RANK_MAP`
+
+### 6. 1,743 BugSigDB studies were successfully analyzed
+
+The prototype validated the approach at scale using LLM-driven analysis.
+
+- Prototype: [PR #41](https://github.com/CultureBotAI/KG-Microbe-search/pull/41) —
+  1,743 study analysis YAML files validated against the schema
+- bsdbng: `just pipeline` produces 1,923 studies deterministically in ~22s
 
 ## What bsdbng adds
 
