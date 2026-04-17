@@ -314,56 +314,91 @@ def _parse_taxa(
     sig_id: str,
     log: list[dict[str, str]],
 ) -> list[dict[str, str]]:
-    """Parse pipe-separated taxon IDs and names into Taxon dicts."""
-    ids = [t.strip() for t in tax_ids.split("|") if t.strip()] if tax_ids else []
-    name_list = [n.strip() for n in names.split("|") if n.strip()] if names else []
+    """Parse BugSigDB taxon ID and name strings into Taxon dicts.
+
+    BugSigDB encodes taxa as:
+    - Semicolons separate distinct taxa within one signature
+    - Pipes separate lineage levels within one taxon (kingdom→...→leaf)
+    - The last pipe-separated element is the most specific (leaf) taxon
+    - MetaPhlAn names use the same delimiters with rank prefixes (k__, p__, etc.)
+    """
+    if not tax_ids or tax_ids.strip() in ("", "NA"):
+        return []
+
+    # Semicolons separate distinct taxa
+    id_chains = [c.strip() for c in tax_ids.split(";") if c.strip()]
+    name_chains = [c.strip() for c in names.split(";") if c.strip()] if names else []
 
     taxa: list[dict[str, str]] = []
-    for i, tid in enumerate(ids):
-        # BugSigDB sometimes includes lineage info as "taxon_id;parent_id".
-        # Take the first component as the actual taxon ID.
-        tid_raw = tid.strip()
-        if ";" in tid_raw:
-            log.append(
-                {
-                    "level": "info",
-                    "entity": "taxon",
-                    "id": tid_raw.split(";")[0].strip(),
-                    "signature": sig_id,
-                    "reason": f"semicolon-separated taxon ID, used first component: {tid_raw!r}",
-                }
-            )
-        tid_clean = tid_raw.split(";")[0].strip()
-        if tid_clean.isdigit():
-            curie = f"NCBITaxon:{tid_clean}"
-        elif tid_clean.startswith("NCBITaxon:"):
-            curie = tid_clean
+    for i, id_chain in enumerate(id_chains):
+        # Pipes separate lineage levels; take the last (most specific)
+        lineage_ids = [x.strip() for x in id_chain.split("|") if x.strip()]
+        if not lineage_ids:
+            continue
+
+        leaf_id = lineage_ids[-1]
+        if leaf_id.isdigit():
+            curie = f"NCBITaxon:{leaf_id}"
+        elif leaf_id.startswith("NCBITaxon:"):
+            curie = leaf_id
         else:
             log.append(
                 {
                     "level": "skip",
                     "entity": "taxon",
-                    "id": tid_clean,
+                    "id": leaf_id,
                     "signature": sig_id,
-                    "reason": f"unparseable taxon ID: {tid_clean!r}",
+                    "reason": f"unparseable leaf taxon ID: {leaf_id!r}",
                 }
             )
             continue
 
-        if i < len(name_list):
-            name = name_list[i]
-        else:
-            name = f"taxon_{tid_clean}"
+        if len(lineage_ids) > 1:
             log.append(
                 {
                     "level": "info",
                     "entity": "taxon",
                     "id": curie,
                     "signature": sig_id,
-                    "reason": f"no name at index {i}, using placeholder: {name!r}",
+                    "reason": f"lineage with {len(lineage_ids)} levels, used leaf",
                 }
             )
-        rank = _taxon_name_to_rank(name)
+
+        # Extract name from MetaPhlAn lineage if available
+        name: str
+        rank: str | None = None
+        if i < len(name_chains):
+            name_parts = [x.strip() for x in name_chains[i].split("|") if x.strip()]
+            if name_parts:
+                leaf_name = name_parts[-1]
+                # Parse MetaPhlAn rank prefix (k__, p__, g__, s__, etc.)
+                name, rank = _parse_metaphlan_name(leaf_name)
+            else:
+                name = f"taxon_{leaf_id}"
+                log.append(
+                    {
+                        "level": "info",
+                        "entity": "taxon",
+                        "id": curie,
+                        "signature": sig_id,
+                        "reason": "empty name chain, using placeholder",
+                    }
+                )
+        else:
+            name = f"taxon_{leaf_id}"
+            log.append(
+                {
+                    "level": "info",
+                    "entity": "taxon",
+                    "id": curie,
+                    "signature": sig_id,
+                    "reason": f"no name chain at index {i}, using placeholder",
+                }
+            )
+
+        if rank is None:
+            rank = _taxon_name_to_rank(name)
+
         taxa.append(
             {
                 "id": curie,
@@ -373,3 +408,23 @@ def _parse_taxa(
         )
 
     return taxa
+
+
+METAPHLAN_RANK_MAP: dict[str, str] = {
+    "k__": "superkingdom",
+    "p__": "phylum",
+    "c__": "class",
+    "o__": "order",
+    "f__": "family",
+    "g__": "genus",
+    "s__": "species",
+    "t__": "strain",
+}
+
+
+def _parse_metaphlan_name(raw: str) -> tuple[str, str | None]:
+    """Parse a MetaPhlAn name like ``g__Enterococcus`` into (name, rank)."""
+    for prefix, rank in METAPHLAN_RANK_MAP.items():
+        if raw.startswith(prefix):
+            return raw[len(prefix) :], rank
+    return raw, None
