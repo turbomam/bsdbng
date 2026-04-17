@@ -24,6 +24,7 @@ FULL_DUMP_HEADER = (
     "Abundance in Group 1,NCBI Taxonomy IDs,MetaPhlAn taxance,Taxon\n"
 )
 
+# Row 1: two taxa (semicolon-separated), each with lineage (pipe-separated)
 FULL_DUMP_ROW_1 = (
     "bsdb:99/1/1,Study 99,case-control,12345678,10.1234/test,,,"
     "Test Study Title,Test Journal,2024,keyword1,"
@@ -31,9 +32,10 @@ FULL_DUMP_ROW_1 = (
     "obesity,EFO:0001073,lean,obese,obese subjects,10,10,yes,"
     "16S,V4,Illumina,relative abundances,Mann-Whitney,0.05,"
     "BH,NA,age,BMI,,,,,,"
-    "increased,9606|1234,Homo sapiens|Lactobacillus,\n"
+    "increased,1783272|91061|1350;1783272|1239|1578|1485,k__Bacillati|c__Bacilli|g__Enterococcus;k__Bacillati|p__Bacillota|c__Clostridia|g__Clostridium,\n"
 )
 
+# Row 2: single taxon, no lineage
 FULL_DUMP_ROW_2 = (
     "bsdb:99/1/2,Study 99,case-control,12345678,10.1234/test,,,"
     "Test Study Title,Test Journal,2024,keyword1,"
@@ -41,7 +43,7 @@ FULL_DUMP_ROW_2 = (
     "obesity,EFO:0001073,lean,obese,obese subjects,10,10,yes,"
     "16S,V4,Illumina,relative abundances,Mann-Whitney,0.05,"
     "BH,NA,age,BMI,,,,,,"
-    "decreased,5678,Bacteroides fragilis,\n"
+    "decreased,5678,s__Bacteroides fragilis,\n"
 )
 
 
@@ -74,10 +76,17 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
 
     sig_increased = next(s for s in exp["signatures"] if s["direction"] == "increased")
     assert len(sig_increased["taxa"]) == 2
-    assert sig_increased["taxa"][0]["id"] == "NCBITaxon:9606"
+    assert sig_increased["taxa"][0]["id"] == "NCBITaxon:1350"
+    assert sig_increased["taxa"][0]["taxon_name"] == "Enterococcus"
+    assert sig_increased["taxa"][0]["taxonomic_rank"] == "genus"
+    assert sig_increased["taxa"][1]["id"] == "NCBITaxon:1485"
+    assert sig_increased["taxa"][1]["taxon_name"] == "Clostridium"
 
     sig_decreased = next(s for s in exp["signatures"] if s["direction"] == "decreased")
+    assert len(sig_decreased["taxa"]) == 1
     assert sig_decreased["taxa"][0]["id"] == "NCBITaxon:5678"
+    assert sig_decreased["taxa"][0]["taxon_name"] == "Bacteroides fragilis"
+    assert sig_decreased["taxa"][0]["taxonomic_rank"] == "species"
 
 
 def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:

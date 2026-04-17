@@ -53,8 +53,10 @@ classes:
         required: true
     slot_usage:
       id:
-        pattern: "^bsdb:[0-9]+$"
-        description: BugSigDB study identifier, e.g. bsdb:10202341.
+        pattern: "^bsdb:.+$"
+        description: >-
+          BugSigDB study identifier. Usually numeric (e.g. bsdb:10202341)
+          but some entries use DOIs or PMC IDs (e.g. bsdb:PMC11017998).
 
   Experiment:
     is_a: NamedThing
@@ -78,7 +80,7 @@ classes:
         required: true
     slot_usage:
       id:
-        pattern: "^bsdb:[0-9]+/[0-9]+$"
+        pattern: "^bsdb:.+/[0-9]+$"
         description: BugSigDB experiment identifier, e.g. bsdb:10202341/1.
 
   Signature:
@@ -101,7 +103,7 @@ classes:
         required: true
     slot_usage:
       id:
-        pattern: "^bsdb:[0-9]+/[0-9]+/[0-9]+$"
+        pattern: "^bsdb:.+/[0-9]+/[0-9]+$"
         description: BugSigDB signature identifier, e.g. bsdb:10202341/1/1.
       direction:
         required: true

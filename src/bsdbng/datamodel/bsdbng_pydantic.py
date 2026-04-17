@@ -127,10 +127,12 @@ class Study(NamedThing):
     """
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
          'id_prefixes': ['bsdb'],
-         'slot_usage': {'id': {'description': 'BugSigDB study identifier, e.g. '
-                                              'bsdb:10202341.',
+         'slot_usage': {'id': {'description': 'BugSigDB study identifier. Usually '
+                                              'numeric (e.g. bsdb:10202341) but some '
+                                              'entries use DOIs or PMC IDs (e.g. '
+                                              'bsdb:PMC11017998).',
                                'name': 'id',
-                               'pattern': '^bsdb:[0-9]+$'}},
+                               'pattern': '^bsdb:.+$'}},
          'title': 'Study',
          'tree_root': True})
 
@@ -141,7 +143,7 @@ class Study(NamedThing):
     doi: Optional[str] = Field(default=None, title="DOI", description="""Digital object identifier for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     url: Optional[str] = Field(default=None, title="URL", description="""Stable URL for the study when no DOI or PMID is available.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     experiments: list[Experiment] = Field(default=..., title="Experiments", description="""Semantic experiment units recorded for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
-    id: str = Field(default=..., title="ID", description="""BugSigDB study identifier, e.g. bsdb:10202341.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
+    id: str = Field(default=..., title="ID", description="""BugSigDB study identifier. Usually numeric (e.g. bsdb:10202341) but some entries use DOIs or PMC IDs (e.g. bsdb:PMC11017998).""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('doi')
     def pattern_doi(cls, v):
@@ -158,7 +160,7 @@ class Study(NamedThing):
 
     @field_validator('id')
     def pattern_id(cls, v):
-        pattern=re.compile(r"^bsdb:[0-9]+$")
+        pattern=re.compile(r"^bsdb:.+$")
         if isinstance(v, list):
             for element in v:
                 if isinstance(element, str) and not pattern.match(element):
@@ -179,7 +181,7 @@ class Experiment(NamedThing):
          'slot_usage': {'id': {'description': 'BugSigDB experiment identifier, e.g. '
                                               'bsdb:10202341/1.',
                                'name': 'id',
-                               'pattern': '^bsdb:[0-9]+/[0-9]+$'}},
+                               'pattern': '^bsdb:.+/[0-9]+$'}},
          'title': 'Experiment'})
 
     experiment_name: Optional[str] = Field(default=None, title="Experiment Name", description="""Label for the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
@@ -190,7 +192,7 @@ class Experiment(NamedThing):
 
     @field_validator('id')
     def pattern_id(cls, v):
-        pattern=re.compile(r"^bsdb:[0-9]+/[0-9]+$")
+        pattern=re.compile(r"^bsdb:.+/[0-9]+$")
         if isinstance(v, list):
             for element in v:
                 if isinstance(element, str) and not pattern.match(element):
@@ -212,7 +214,7 @@ class Signature(NamedThing):
                         'id': {'description': 'BugSigDB signature identifier, e.g. '
                                               'bsdb:10202341/1/1.',
                                'name': 'id',
-                               'pattern': '^bsdb:[0-9]+/[0-9]+/[0-9]+$'}},
+                               'pattern': '^bsdb:.+/[0-9]+/[0-9]+$'}},
          'title': 'Signature'})
 
     direction: DirectionEnum = Field(default=..., title="Direction", description="""Reported direction of abundance change for taxa in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
@@ -221,7 +223,7 @@ class Signature(NamedThing):
 
     @field_validator('id')
     def pattern_id(cls, v):
-        pattern=re.compile(r"^bsdb:[0-9]+/[0-9]+/[0-9]+$")
+        pattern=re.compile(r"^bsdb:.+/[0-9]+/[0-9]+$")
         if isinstance(v, list):
             for element in v:
                 if isinstance(element, str) and not pattern.match(element):
