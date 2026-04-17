@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 
+from bsdbng.datamodel import Study
 from bsdbng.paths import RAW_DATA_DIR, STUDY_DATA_DIR
 
 REQUIRED_EXPORTS = ("studies.csv", "experiments.csv", "signatures.csv")
@@ -24,8 +25,9 @@ def assert_required_exports(raw_dir: Path) -> None:
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
     """Read a CSV, skipping comment lines that start with ``#``."""
-    lines = [line for line in path.read_text().splitlines() if not line.startswith("#")]
-    return list(csv.DictReader(lines))
+    with path.open(encoding="utf-8", newline="") as handle:
+        lines = (line for line in handle if not line.startswith("#"))
+        return list(csv.DictReader(lines))
 
 
 def _parse_study_id(bsdb_id: str) -> str:
@@ -65,20 +67,19 @@ def _taxon_name_to_rank(name: str) -> str:
 def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[Path]:
     """Parse raw CSVs and emit per-study YAML files.
 
-    Each YAML file is a ``BugSigDBDataset`` containing one ``StudyRecord``.
-    Returns the list of written file paths.
+    Each YAML file is a bare Study validated through the Pydantic model
+    before writing. Returns the list of written file paths.
     """
     raw_dir = raw_dir or RAW_DATA_DIR
     study_dir = study_dir or STUDY_DATA_DIR
-    assert_required_exports(raw_dir)
     study_dir.mkdir(parents=True, exist_ok=True)
 
-    # The full_dump.csv from BugSigDBExports is a pre-merged flat table.
-    # The raw Help:Export CSVs are three separate files, but the recommended
-    # upstream path uses full_dump.csv which is already merged. We support both:
-    # if full_dump.csv exists, use it; otherwise fall back to the three CSVs.
     full_dump = raw_dir / "full_dump.csv"
-    rows = _read_csv(full_dump) if full_dump.exists() else _build_rows_from_separate_csvs(raw_dir)
+    if full_dump.exists():
+        rows = _read_csv(full_dump)
+    else:
+        assert_required_exports(raw_dir)
+        rows = _build_rows_from_separate_csvs(raw_dir)
 
     # Group rows by study id
     studies: dict[str, list[dict[str, str]]] = defaultdict(list)
@@ -95,6 +96,10 @@ def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[P
         if not record["experiments"]:
             print(f"skipped {study_id}: no valid experiments/signatures", file=sys.stderr)
             continue
+
+        # Validate through Pydantic before writing
+        Study.model_validate(record)
+
         filename = study_id.replace(":", "_").replace("/", "_") + ".yaml"
         dest = study_dir / filename
         dest.write_text(yaml.dump(record, default_flow_style=False, sort_keys=False))

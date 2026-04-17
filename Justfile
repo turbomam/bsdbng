@@ -86,7 +86,7 @@ clean-studies:
 	rm -f data/studies/*.yaml
 
 clean-derived:
-	rm -f data/derived/*[!.gitkeep]
+	find data/derived -type f ! -name .gitkeep -delete
 
 clean-logs:
 	rm -f {{logdir}}/pipeline.log
