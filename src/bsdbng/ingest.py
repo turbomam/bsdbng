@@ -184,7 +184,7 @@ def _build_study_record(
                         "level": "skip",
                         "entity": "signature",
                         "id": sig_id,
-                        "reason": f"unparseable direction: {direction_raw!r}",
+                        "reason": f"unparsable direction: {direction_raw!r}",
                     }
                 )
                 continue
@@ -348,7 +348,7 @@ def _parse_taxa(
                     "entity": "taxon",
                     "id": leaf_id,
                     "signature": sig_id,
-                    "reason": f"unparseable leaf taxon ID: {leaf_id!r}",
+                    "reason": f"unparsable leaf taxon ID: {leaf_id!r}",
                 }
             )
             continue
