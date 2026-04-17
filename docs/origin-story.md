@@ -80,6 +80,33 @@ The prototype validated the approach at scale using LLM-driven analysis.
   1,743 study analysis YAML files validated against the schema
 - bsdbng: `just pipeline` produces 1,923 studies deterministically in ~22s
 
+## Archived prototype branches
+
+The prototype branches in KG-Microbe-search were tagged and deleted
+after their code PRs were merged. The tags preserve the exact commit
+history. To reconstitute any branch:
+
+```bash
+# List archive tags
+git tag -l 'archive/*'
+
+# Inspect a tag
+git log --oneline archive/updated-noel-tsv
+
+# Recreate a branch from a tag
+git checkout -b restored-noel-tsv archive/updated-noel-tsv
+
+# Browse files at that point without creating a branch
+git show archive/updated-noel-tsv:generate_trait_tsv_from_yaml.py
+```
+
+| Tag | Original branch | What it contains |
+|-----|----------------|------------------|
+| `archive/content-pr41-yaml-outputs` | `content-pr41-bugsigdb-analysis-yaml` | ~100 generated study YAML files (PR #46) |
+| `archive/content-pr42-curated-fixes` | `content-pr42-curated-study-fixes` | Curated epilepsy/skin-wound study updates (PR #47) |
+| `archive/updated-noel-tsv` | `updated-noel-tsv` | YAML-based trait profile TSV generator (PR #51) |
+| `archive/noel-trait-tsv-orphan` | `noel_trait_tsv` | Early exploratory work: trait profiles, GTDB/NCBI tables |
+
 ## What bsdbng adds
 
 bsdbng takes the proven concepts and packages them with:
