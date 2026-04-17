@@ -24,22 +24,74 @@ just check            # verify everything works
 
 ### Windows
 
+If you have nothing installed, follow these steps in order.
+
+#### Step 1: Install Git for Windows
+
+Download and install from https://gitforwindows.org
+
+This gives you `git` and **Git Bash** — a bash shell that `just` needs.
+Use Git Bash (not PowerShell or cmd) for all commands below.
+
+#### Step 2: Install uv
+
+Open **Git Bash** and run:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or if you prefer PowerShell:
+
 ```powershell
-# Install uv
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
-# Install just
-# Option 1: winget
+Close and reopen your terminal after installing so `uv` is on your PATH.
+
+#### Step 3: Install just
+
+Option 1 (winget, from PowerShell):
+```powershell
 winget install Casey.Just
-# Option 2: cargo
-cargo install just
+```
 
-# Clone and set up
+Option 2 (pre-built binary): download from
+https://just.systems/man/en/packages.html and put it on your PATH.
+
+#### Step 4: Verify
+
+Open **Git Bash** and run:
+
+```bash
+git --version
+uv --version
+just --version
+```
+
+All three should print version numbers. If any fails, it's not on your PATH.
+
+#### Step 5: Clone and check
+
+```bash
 git clone https://github.com/turbomam/bsdbng.git
 cd bsdbng
 uv sync --all-extras --group dev --group qa
 just check
 ```
+
+`just check` should pass. If it doesn't, open an issue.
+
+#### Troubleshooting
+
+- **`just` can't find bash**: make sure you're running in Git Bash, not
+  PowerShell or cmd. The Justfile uses `bash` as its shell.
+- **uv not found after install**: close and reopen your terminal.
+- **Execution policy errors**: if PowerShell blocks install scripts, you may
+  need to run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
+  This only affects your user account.
+- **Your coding agent works around a missing tool**: don't let it. See
+  [AGENTS.md](AGENTS.md) for why and what to do instead.
 
 ## Making changes
 
