@@ -75,6 +75,12 @@ download:
 ingest:
 	just timed ingest "uv run python -c 'from bsdbng.ingest import ingest; ingest()'"
 
+validate-studies:
+	just timed validate-studies "uv run python -c 'from bsdbng.validate import validate_all_studies; validate_all_studies()'"
+
+validate-studies-linkml:
+	just timed validate-studies-linkml "uv run linkml validate -s {{schema}} -C Study data/studies/*.yaml"
+
 pipeline: download ingest
 
 # --- cleanup ---
