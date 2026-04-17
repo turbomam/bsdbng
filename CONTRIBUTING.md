@@ -1,0 +1,153 @@
+# Contributing to bsdbng
+
+## Setup
+
+### macOS / Linux
+
+```bash
+# Install uv (Python environment manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install just (command runner)
+# macOS:
+brew install just
+# Linux:
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
+
+# Clone and set up
+git clone https://github.com/turbomam/bsdbng.git
+cd bsdbng
+uv sync --all-extras --group dev --group qa
+just install-hooks    # install pre-commit hooks
+just check            # verify everything works
+```
+
+### Windows
+
+```powershell
+# Install uv
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Install just
+# Option 1: winget
+winget install Casey.Just
+# Option 2: cargo
+cargo install just
+
+# Clone and set up
+git clone https://github.com/turbomam/bsdbng.git
+cd bsdbng
+uv sync --all-extras --group dev --group qa
+just check
+```
+
+## Making changes
+
+### 1. Pick an issue
+
+All work starts from a [GitHub issue](https://github.com/turbomam/bsdbng/issues).
+Don't start work without one. If you want to do something that doesn't have an
+issue, open one first.
+
+### 2. Create a branch
+
+```bash
+git checkout main
+git pull
+git checkout -b issue-<number>-<short-slug>
+# Example: git checkout -b issue-30-aggregate-tables
+```
+
+### 3. Write code
+
+- Source code goes in `src/bsdbng/`
+- Tests go in `tests/`
+- Justfile recipes for new pipeline steps should use the `timed` wrapper
+
+### 4. Run checks before committing
+
+```bash
+just check
+```
+
+This runs everything: ruff (lint + format), mypy (types), pytest (tests),
+linkml lint/validate (schema), bandit (security), deptry (dependencies),
+and pip-audit (vulnerabilities).
+
+**All checks must pass.** If something fails, fix it. If you think the
+check is wrong, open an issue — don't skip the check.
+
+If you want to auto-fix formatting:
+
+```bash
+just format
+```
+
+### 5. Commit and push
+
+```bash
+git add <your files>
+git commit -m "Short description of what and why"
+git push -u origin issue-<number>-<short-slug>
+```
+
+### 6. Open a PR
+
+- Reference the issue: "Closes #30" in the PR body
+- Wait for CI to pass
+- Respond to Copilot review comments if any
+
+## What not to do
+
+- Don't commit generated files (`data/raw/*.csv`, `data/studies/*.yaml`,
+  `data/derived/*`, `logs/`) — they're gitignored for a reason
+- Don't edit `src/bsdbng/datamodel/bsdbng_pydantic.py` by hand — it's
+  generated from the schema. Run `just gen-pydantic` after schema changes.
+- Don't add `# noqa`, `# type: ignore`, or `# nosec` comments. If the
+  check is wrong, fix the code or open an issue about the check.
+- Don't add dependencies without discussing them first. This project uses
+  a minimal dependency set intentionally.
+- Don't use sentinel values (e.g., `NCBITaxon:0`, `"unknown"`, `-1`).
+  If data is missing, use `null` or skip the record and log why.
+
+## Useful tools
+
+### yq (recommended)
+
+[yq](https://github.com/mikefarah/yq) (Mike Farah's Go version) is
+useful for exploring the YAML output:
+
+```bash
+# macOS
+brew install yq
+
+# Linux
+sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+sudo chmod +x /usr/local/bin/yq
+
+# Show all taxon names in a study
+yq '.experiments[].signatures[].taxa[].taxon_name' data/studies/bsdb_10202341.yaml
+
+# Count experiments
+yq '.experiments | length' data/studies/bsdb_10202341.yaml
+
+# Find studies with a specific PMID
+grep -rl "pmid: 10202341" data/studies/
+```
+
+### jq (for JSON logs)
+
+```bash
+# Summarize ingest log skip reasons
+jq '[.[] | select(.level == "skip")] | group_by(.reason) | map({reason: .[0].reason, count: length}) | sort_by(-.count)' data/derived/ingest_log.json
+```
+
+## Project conventions
+
+- **File types**: CSV (input), YAML (output/schema), Python (code), JSON (logs).
+  Nothing else.
+- **Identifiers**: all entities have an `id` slot inherited from `NamedThing`.
+  Study IDs use `bsdb:` prefix. Taxon IDs use `NCBITaxon:` prefix.
+- **No sentinels**: missing data is `null`, not a magic value.
+- **Log everything**: every data drop or transformation assumption goes
+  to `data/derived/ingest_log.json`.
