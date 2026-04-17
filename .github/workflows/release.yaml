@@ -41,15 +41,15 @@ jobs:
         run: |
           echo "## Pipeline results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Raw CSVs: $(ls data/raw/*.csv | wc -l) files, $(du -sh data/raw/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
-          echo "- Studies: $(ls data/studies/*.yaml | wc -l) YAML files, $(du -sh data/studies/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          echo "- Raw CSVs: $(find data/raw -maxdepth 1 -type f -name '*.csv' | wc -l) files, $(du -sh data/raw/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          echo "- Studies: $(find data/studies -maxdepth 1 -type f -name '*.yaml' | wc -l) YAML files, $(du -sh data/studies/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
           echo "- Ingest log: $(wc -l < data/derived/ingest_log.json) lines" >> $GITHUB_STEP_SUMMARY
           cat logs/pipeline.log >> $GITHUB_STEP_SUMMARY
 
       - name: Package data artifacts
         run: |
-          tar czf bsdbng-raw-data-${GITHUB_REF_NAME}.tar.gz -C data/raw .
-          tar czf bsdbng-studies-${GITHUB_REF_NAME}.tar.gz -C data/studies .
+          tar --exclude=.gitkeep --exclude='./.gitkeep' -czf bsdbng-raw-data-${GITHUB_REF_NAME}.tar.gz -C data/raw .
+          tar --exclude=.gitkeep --exclude='./.gitkeep' -czf bsdbng-studies-${GITHUB_REF_NAME}.tar.gz -C data/studies .
           cp data/derived/ingest_log.json bsdbng-ingest-log-${GITHUB_REF_NAME}.json
           cp logs/pipeline.log bsdbng-pipeline-log-${GITHUB_REF_NAME}.log
 
