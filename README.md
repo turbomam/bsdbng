@@ -92,6 +92,9 @@ But the code must pass `just check` before committing. The workflow is:
 Do not commit code that hasn't passed `just check`. Do not skip checks.
 If a check seems wrong, open an issue to discuss changing the check.
 
+See [AGENTS.md](AGENTS.md) for the full policy on agent-assisted development,
+including what to do when your agent works around a missing tool.
+
 ### File types
 
 This project uses a minimal set of file types:
