@@ -80,8 +80,8 @@ classes:
         required: true
     slot_usage:
       id:
-        pattern: "^bsdb:.+/[0-9]+$"
-        description: BugSigDB experiment identifier, e.g. bsdb:10202341/1.
+        pattern: "^bsdb:.+-[0-9]+$"
+        description: BugSigDB experiment identifier, e.g. bsdb:10202341-1.
 
   Signature:
     is_a: NamedThing
@@ -103,8 +103,8 @@ classes:
         required: true
     slot_usage:
       id:
-        pattern: "^bsdb:.+/[0-9]+/[0-9]+$"
-        description: BugSigDB signature identifier, e.g. bsdb:10202341/1/1.
+        pattern: "^bsdb:.+-[0-9]+-[0-9]+$"
+        description: BugSigDB signature identifier, e.g. bsdb:10202341-1-1.
       direction:
         required: true
 

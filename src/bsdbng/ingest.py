@@ -41,14 +41,14 @@ def _parse_study_id(bsdb_id: str) -> str:
 
 
 def _parse_experiment_id(bsdb_id: str) -> str:
-    """Extract study/experiment id from ``bsdb:11/1/1`` → ``bsdb:11/1``."""
+    """Extract study/experiment id from ``bsdb:11/1/1`` → ``bsdb:11-1``."""
     parts = bsdb_id.removeprefix("bsdb:").split("/")
-    return f"bsdb:{parts[0]}/{parts[1]}" if len(parts) >= 2 else bsdb_id
+    return f"bsdb:{parts[0]}-{parts[1]}" if len(parts) >= 2 else bsdb_id
 
 
 def _parse_signature_id(bsdb_id: str) -> str:
-    """Return the full BSDB ID as the signature id."""
-    return bsdb_id
+    """Convert ``bsdb:11/1/1`` → ``bsdb:11-1-1`` (CURIE-safe delimiters)."""
+    return bsdb_id.replace("/", "-")
 
 
 def _taxon_name_to_rank(name: str) -> str:

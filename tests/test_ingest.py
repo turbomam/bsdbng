@@ -71,7 +71,7 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     assert len(study["experiments"]) == 1
 
     exp = study["experiments"][0]
-    assert exp["id"] == "bsdb:99/1"
+    assert exp["id"] == "bsdb:99-1"
     assert len(exp["signatures"]) == 2
 
     sig_increased = next(s for s in exp["signatures"] if s["direction"] == "increased")

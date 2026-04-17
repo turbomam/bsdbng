@@ -179,20 +179,20 @@ class Experiment(NamedThing):
     linkml_meta: ClassVar[LinkMLMeta] = LinkMLMeta({'from_schema': 'https://w3id.org/bsdbng/schema',
          'id_prefixes': ['bsdb'],
          'slot_usage': {'id': {'description': 'BugSigDB experiment identifier, e.g. '
-                                              'bsdb:10202341/1.',
+                                              'bsdb:10202341-1.',
                                'name': 'id',
-                               'pattern': '^bsdb:.+/[0-9]+$'}},
+                               'pattern': '^bsdb:.+-[0-9]+$'}},
          'title': 'Experiment'})
 
     experiment_name: Optional[str] = Field(default=None, title="Experiment Name", description="""Label for the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     group_0_name: Optional[str] = Field(default=None, title="Group 0 Name", description="""Label for one of the contrasted sample groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     group_1_name: Optional[str] = Field(default=None, title="Group 1 Name", description="""Label for the other contrasted sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     signatures: list[Signature] = Field(default=..., title="Signatures", description="""Signatures associated with the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    id: str = Field(default=..., title="ID", description="""BugSigDB experiment identifier, e.g. bsdb:10202341/1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
+    id: str = Field(default=..., title="ID", description="""BugSigDB experiment identifier, e.g. bsdb:10202341-1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('id')
     def pattern_id(cls, v):
-        pattern=re.compile(r"^bsdb:.+/[0-9]+$")
+        pattern=re.compile(r"^bsdb:.+-[0-9]+$")
         if isinstance(v, list):
             for element in v:
                 if isinstance(element, str) and not pattern.match(element):
@@ -212,18 +212,18 @@ class Signature(NamedThing):
          'id_prefixes': ['bsdb'],
          'slot_usage': {'direction': {'name': 'direction', 'required': True},
                         'id': {'description': 'BugSigDB signature identifier, e.g. '
-                                              'bsdb:10202341/1/1.',
+                                              'bsdb:10202341-1-1.',
                                'name': 'id',
-                               'pattern': '^bsdb:.+/[0-9]+/[0-9]+$'}},
+                               'pattern': '^bsdb:.+-[0-9]+-[0-9]+$'}},
          'title': 'Signature'})
 
     direction: DirectionEnum = Field(default=..., title="Direction", description="""Reported direction of abundance change for taxa in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
     taxa: list[Taxon] = Field(default=..., title="Taxa", description="""Taxa listed in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
-    id: str = Field(default=..., title="ID", description="""BugSigDB signature identifier, e.g. bsdb:10202341/1/1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
+    id: str = Field(default=..., title="ID", description="""BugSigDB signature identifier, e.g. bsdb:10202341-1-1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
     @field_validator('id')
     def pattern_id(cls, v):
-        pattern=re.compile(r"^bsdb:.+/[0-9]+/[0-9]+$")
+        pattern=re.compile(r"^bsdb:.+-[0-9]+-[0-9]+$")
         if isinstance(v, list):
             for element in v:
                 if isinstance(element, str) and not pattern.match(element):
