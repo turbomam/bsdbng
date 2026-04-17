@@ -84,6 +84,9 @@ validate-studies:
 validate-studies-linkml:
 	just timed validate-studies-linkml "uv run linkml validate -s {{schema}} -C Study data/studies/*.yaml"
 
+stats:
+	@uv run python -c "from bsdbng.stats import print_stats; print_stats()"
+
 pipeline: download ingest
 
 # --- cleanup ---

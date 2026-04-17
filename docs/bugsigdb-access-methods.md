@@ -1,7 +1,33 @@
 # BugSigDB Data Access Methods
 
-This note documents the currently available ways to access BugSigDB data and
-the criteria for choosing among them in `bsdbng`.
+This note documents the available ways to access BugSigDB data, what we
+learned about each, and the criteria for choosing among them in `bsdbng`.
+
+## BugSigDB is a structured database
+
+BugSigDB is a MediaWiki-based structured database. The data is entered
+through forms with distinct Study, Experiment, and Signature entities.
+The CSV exports are a flattened representation of this structure — the
+hierarchy is encoded in the `BSDB ID` column (e.g. `bsdb:10202341/1/1`
+= study/experiment/signature) and repeated metadata columns.
+
+Our ingestion pipeline is essentially unflattening the CSV back into the
+structure that BugSigDB already stores internally. This means we are
+working around CSV encoding artifacts (comma-separated ontology IDs,
+pipe/semicolon-encoded MetaPhlAn lineage paths) that wouldn't exist if
+we had access to the structured data directly.
+
+## Study count comparison (2026-04-17)
+
+| Source | Studies | Notes |
+|--------|---------|-------|
+| BugSigDB main page (live) | 2,010 | Authoritative count |
+| studies.csv (Help:Export) | 2,009 | 1,993 Complete, 10 Incomplete, 6 blank State |
+| full_dump.csv (BugSigDBExports) | 1,949 | 60 studies lost to upstream filtering |
+| bsdbng output | 1,923 | After our filtering (NA direction/taxa) |
+
+The 60-study gap between studies.csv and full_dump.csv is caused by
+BugSigDBExports' `dump_release.R` filtering. We don't control that filter.
 
 ## Available methods
 
@@ -9,81 +35,74 @@ the criteria for choosing among them in `bsdbng`.
 
 BugSigDB exposes three raw export tables on `Help:Export`:
 
-- `studies.csv`
-- `experiments.csv`
-- `signatures.csv`
+- `studies.csv` — 2,009 studies (13 columns including State)
+- `experiments.csv` — 8,091 rows (experiment-level metadata)
+- `signatures.csv` — 13,023 rows (taxa, direction, curator info)
 
 These are the closest public exports to the current operational state of the
 database. They are the least transformed input surface available to us.
 
-Current live sizes on 2026-04-13:
-
-- `studies.csv`: 4,419,974 bytes
-- `experiments.csv`: 3,205,728 bytes
-- `signatures.csv`: 17,186,766 bytes
-- total: 24,812,468 bytes across 3 files
+**Important:** these are separate tables that must be joined to produce
+the full study→experiment→signature→taxa hierarchy. The join keys are
+encoded in the BSDB ID column and the Study/Experiment page name columns.
 
 ### 2. BugSigDBExports repository
 
 The `waldronlab/BugSigDBExports` repository is a derived export layer built
 from the three raw BugSigDB CSV tables.
 
-Its README says the export workflow:
+Its `dump_release.R` script:
 
 1. obtains and merges the study, experiment, and signature tables from
    `Help:Export`
-2. filters incomplete records
+2. **filters incomplete records** (this is where 60 studies are lost)
 3. adds signature IDs
-4. writes `full_dump.csv`
+4. writes `full_dump.csv` (51 columns, pre-merged flat table)
 5. writes GMT files for multiple identifier schemes and taxonomic levels
 
-Current derived artifacts visible in the repo:
-
-- `full_dump.csv`: 27,365,297 bytes
-- `.gmt` files: 15 files, 45,403,996 bytes total
-
-This is convenient, but it is not the raw source export. It is already merged
-and transformed upstream.
+`full_dump.csv` is convenient (pre-joined, one file) but inherits upstream
+filtering decisions we don't control.
 
 ### 3. Stable snapshot releases
 
-BugSigDB also publishes stable snapshot releases, including Zenodo releases
-linked from the paper and the `BugSigDBExports` README.
+BugSigDB publishes stable snapshot releases on Zenodo. Useful when
+reproducibility matters more than freshness.
 
-These are useful when reproducibility matters more than freshness.
+### 4. `bugsigdbr` R package
 
-Example release sizes:
+The Bioconductor R package for programmatic access to BugSigDB. May
+provide structured access to the data without CSV flattening artifacts.
+Tracked in issue #62.
 
-- Zenodo `v1.3.0`: 51.6 MB total files
-- Zenodo `v1.2.2`: 31.0 MB total files
-- Zenodo `v1.2.0`: 19.1 MB total files
+## CSV encoding artifacts we work around
 
-### 4. `bugsigdbr`
+These are properties of the CSV flattening, not of the underlying data:
 
-`bugsigdbr` is the Bioconductor R package for programmatic access to BugSigDB.
+| Artifact | Where | What we do |
+|----------|-------|------------|
+| Pipe-separated lineage paths | NCBI Taxonomy IDs column | Split on `;` for taxa, take leaf of `\|`-separated lineage |
+| MetaPhlAn rank prefixes | MetaPhlAn taxon names column | Parse `k__`, `g__`, `s__` etc. for rank |
+| Comma-separated ontology IDs | UBERON ID, EFO ID columns | Split into multivalued lists |
+| Mixed ontology prefixes in "EFO ID" | EFO ID column | 20+ prefixes (EFO, MONDO, HP, CHEBI, GO...), renamed to condition_ontology_id |
+| Repeated study/experiment metadata | Every row | Verified: fields are consistent within each study/experiment group — first row is representative |
 
-It is useful for R-centric analysis workflows, but it is not the preferred
-starting point for a LinkML-first Python ingestion repo.
+## Column coverage (51 columns in full_dump.csv)
 
-## What GMT is
+- **45 captured** in bsdbng schema (study, experiment, signature, taxon levels)
+- **6 not captured** (curatorial metadata): Signature page name, Curated date, Curator, Revision editor, State, Reviewer
+- **State column** should be used to filter: only ingest Complete records
 
-`GMT` means Gene Matrix Transposed. It is a simple tab-delimited set format
-used widely in enrichment workflows.
+## Current approach in bsdbng
 
-Each row represents one set:
+bsdbng currently uses `full_dump.csv` (from BugSigDBExports) as the
+primary input, with the three raw CSVs downloaded but unused. The merge
+from separate CSVs is a `NotImplementedError` stub.
 
-- column 1: set name
-- column 2: description
-- remaining columns: members of the set
-
-In BugSigDB exports, the members are microbial taxa rather than genes.
-
-GMT is useful for signature-set analysis. It is not a good canonical ingestion
-format when we need full study, experiment, and provenance metadata.
+**Planned change (issue #64):** switch to using the three separate CSVs
+as primary input, implementing the join in Python, so we control filtering
+and don't lose 60 studies to upstream decisions.
 
 ## Selection criteria
-
-We should choose an access path using these criteria:
 
 - source fidelity
 - reproducibility
@@ -92,25 +111,6 @@ We should choose an access path using these criteria:
 - machine-time performance
 - good citizenship toward upstream infrastructure
 - fit for purpose
-
-## Recommendation for `bsdbng`
-
-For canonical ingestion in `bsdbng`, prefer the raw CSV exports from
-`Help:Export`.
-
-Why:
-
-- they are the least transformed public exports
-- they keep LinkML as the first real structuring layer in this repo
-- they avoid inheriting upstream merge and filtering decisions
-- they are still small enough that performance is not a serious concern
-
-Use the other methods for narrower purposes:
-
-- use `full_dump.csv` for convenience or exploratory comparison
-- use GMT only for set-based enrichment workflows
-- use Zenodo snapshots for frozen reproducible builds
-- use `bugsigdbr` for R workflows, not as the primary ingestion surface here
 
 ## Sources
 
