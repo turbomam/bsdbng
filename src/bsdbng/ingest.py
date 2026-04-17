@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -10,7 +11,7 @@ from pathlib import Path
 import yaml
 
 from bsdbng.datamodel import Study
-from bsdbng.paths import RAW_DATA_DIR, STUDY_DATA_DIR
+from bsdbng.paths import DERIVED_DATA_DIR, RAW_DATA_DIR, STUDY_DATA_DIR
 
 REQUIRED_EXPORTS = ("studies.csv", "experiments.csv", "signatures.csv")
 
@@ -64,15 +65,25 @@ def _taxon_name_to_rank(name: str) -> str:
     return "genus"
 
 
-def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[Path]:
+def ingest(
+    raw_dir: Path | None = None,
+    study_dir: Path | None = None,
+    derived_dir: Path | None = None,
+) -> list[Path]:
     """Parse raw CSVs and emit per-study YAML files.
 
     Each YAML file is a bare Study validated through the Pydantic model
-    before writing. Returns the list of written file paths.
+    before writing. Writes an ingest log to derived_dir/ingest_log.json
+    documenting every skipped row, signature, experiment, and study.
+    Returns the list of written file paths.
     """
     raw_dir = raw_dir or RAW_DATA_DIR
     study_dir = study_dir or STUDY_DATA_DIR
+    derived_dir = derived_dir or DERIVED_DATA_DIR
     study_dir.mkdir(parents=True, exist_ok=True)
+    derived_dir.mkdir(parents=True, exist_ok=True)
+
+    log: list[dict[str, str]] = []
 
     full_dump = raw_dir / "full_dump.csv"
     if full_dump.exists():
@@ -86,14 +97,23 @@ def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[P
     for row in rows:
         bsdb_id = row.get("BSDB ID", "").strip()
         if not bsdb_id:
+            log.append({"level": "skip", "entity": "row", "reason": "empty BSDB ID"})
             continue
         sid = _parse_study_id(bsdb_id)
         studies[sid].append(row)
 
     written: list[Path] = []
     for study_id, study_rows in sorted(studies.items()):
-        record = _build_study_record(study_id, study_rows)
+        record = _build_study_record(study_id, study_rows, log)
         if not record["experiments"]:
+            log.append(
+                {
+                    "level": "skip",
+                    "entity": "study",
+                    "id": study_id,
+                    "reason": "no valid experiments/signatures",
+                }
+            )
             print(f"skipped {study_id}: no valid experiments/signatures", file=sys.stderr)
             continue
 
@@ -104,6 +124,23 @@ def ingest(raw_dir: Path | None = None, study_dir: Path | None = None) -> list[P
         dest = study_dir / filename
         dest.write_text(yaml.dump(record, default_flow_style=False, sort_keys=False))
         written.append(dest)
+
+    # Write ingest log
+    log_path = derived_dir / "ingest_log.json"
+    log_path.write_text(json.dumps(log, indent=2) + "\n")
+
+    # Print summary
+    from collections import Counter
+
+    skips = [e for e in log if e["level"] == "skip"]
+    infos = [e for e in log if e["level"] == "info"]
+    skip_counts = Counter(e["reason"] for e in skips)
+    print(
+        f"wrote {len(written)} studies, {len(skips)} skips, {len(infos)} info entries:",
+        file=sys.stderr,
+    )
+    for reason, count in skip_counts.most_common():
+        print(f"  {count:>5}  {reason}", file=sys.stderr)
 
     return written
 
@@ -118,7 +155,11 @@ def _build_rows_from_separate_csvs(raw_dir: Path) -> list[dict[str, str]]:
     raise NotImplementedError(msg)
 
 
-def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, object]:
+def _build_study_record(
+    study_id: str,
+    rows: list[dict[str, str]],
+    log: list[dict[str, str]],
+) -> dict[str, object]:
     """Build a nested study record dict from flat rows sharing a study id."""
     first = rows[0]
 
@@ -138,10 +179,26 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
             names_str = row.get("MetaPhlAn taxance", "") or row.get("Taxon", "") or ""
             direction_raw = (row.get("Abundance in Group 1", "") or "").strip().lower()
             if direction_raw not in ("increased", "decreased"):
+                log.append(
+                    {
+                        "level": "skip",
+                        "entity": "signature",
+                        "id": sig_id,
+                        "reason": f"unparseable direction: {direction_raw!r}",
+                    }
+                )
                 continue
 
-            taxa = _parse_taxa(taxa_str, names_str)
+            taxa = _parse_taxa(taxa_str, names_str, sig_id, log)
             if not taxa:
+                log.append(
+                    {
+                        "level": "skip",
+                        "entity": "signature",
+                        "id": sig_id,
+                        "reason": "no parseable taxa",
+                    }
+                )
                 continue
 
             sig_records.append(
@@ -153,6 +210,14 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
             )
 
         if not sig_records:
+            log.append(
+                {
+                    "level": "skip",
+                    "entity": "experiment",
+                    "id": exp_id,
+                    "reason": "no valid signatures",
+                }
+            )
             continue
 
         experiment_records.append(
@@ -193,20 +258,46 @@ def _build_study_record(study_id: str, rows: list[dict[str, str]]) -> dict[str, 
     }
 
 
-def _parse_taxa(tax_ids: str, names: str) -> list[dict[str, str]]:
-    """Parse pipe-separated taxon IDs and names into TaxonRecord dicts."""
+def _parse_taxa(
+    tax_ids: str,
+    names: str,
+    sig_id: str,
+    log: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Parse pipe-separated taxon IDs and names into Taxon dicts."""
     ids = [t.strip() for t in tax_ids.split("|") if t.strip()] if tax_ids else []
     name_list = [n.strip() for n in names.split("|") if n.strip()] if names else []
 
     taxa: list[dict[str, str]] = []
     for i, tid in enumerate(ids):
-        # Ensure it's a bare integer — build the CURIE ourselves
-        tid_clean = tid.strip()
+        # BugSigDB sometimes includes lineage info as "taxon_id;parent_id".
+        # Take the first component as the actual taxon ID.
+        tid_raw = tid.strip()
+        if ";" in tid_raw:
+            log.append(
+                {
+                    "level": "info",
+                    "entity": "taxon",
+                    "id": tid_raw.split(";")[0].strip(),
+                    "signature": sig_id,
+                    "reason": f"semicolon-separated taxon ID, used first component: {tid_raw!r}",
+                }
+            )
+        tid_clean = tid_raw.split(";")[0].strip()
         if tid_clean.isdigit():
             curie = f"NCBITaxon:{tid_clean}"
         elif tid_clean.startswith("NCBITaxon:"):
             curie = tid_clean
         else:
+            log.append(
+                {
+                    "level": "skip",
+                    "entity": "taxon",
+                    "id": tid_clean,
+                    "signature": sig_id,
+                    "reason": f"unparseable taxon ID: {tid_clean!r}",
+                }
+            )
             continue
 
         name = name_list[i] if i < len(name_list) else f"taxon_{tid_clean}"
