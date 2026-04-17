@@ -45,6 +45,9 @@ typecheck:
 test:
 	uv run pytest
 
+test-cov:
+	uv run pytest --cov=bsdbng --cov-report=term-missing
+
 install-hooks:
 	uv run pre-commit install
 

@@ -92,10 +92,18 @@ exclude = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra -m 'not integration'"
+addopts = "-ra -m 'not integration' --durations=5"
 markers = [
   "integration: tests that require network access or external services",
 ]
+
+[tool.coverage.run]
+source = ["bsdbng"]
+omit = ["src/bsdbng/datamodel/bsdbng_pydantic.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 60
 
 [tool.codespell]
 skip = [
