@@ -48,8 +48,8 @@ jobs:
 
       - name: Package data artifacts
         run: |
-          tar --exclude=.gitkeep -czf bsdbng-raw-data-${GITHUB_REF_NAME}.tar.gz -C data/raw .
-          tar --exclude=.gitkeep -czf bsdbng-studies-${GITHUB_REF_NAME}.tar.gz -C data/studies .
+          tar --exclude=.gitkeep --exclude='./.gitkeep' -czf bsdbng-raw-data-${GITHUB_REF_NAME}.tar.gz -C data/raw .
+          tar --exclude=.gitkeep --exclude='./.gitkeep' -czf bsdbng-studies-${GITHUB_REF_NAME}.tar.gz -C data/studies .
           cp data/derived/ingest_log.json bsdbng-ingest-log-${GITHUB_REF_NAME}.json
           cp logs/pipeline.log bsdbng-pipeline-log-${GITHUB_REF_NAME}.log
 
