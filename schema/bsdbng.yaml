@@ -13,6 +13,8 @@ prefixes:
   bsdbng: https://w3id.org/bsdbng/
   bsdb: https://bugsigdb.org/Study_
   NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
+  UBERON: http://purl.obolibrary.org/obo/UBERON_
+  EFO: http://identifiers.org/efo/
 
 imports:
   - linkml:types
@@ -43,6 +45,10 @@ classes:
       - publication_year
       - doi
       - url
+      - study_design
+      - authors_list
+      - journal
+      - keywords
     attributes:
       experiments:
         title: Experiments
@@ -68,8 +74,34 @@ classes:
       - bsdb
     slots:
       - experiment_name
+      - location_of_subjects
+      - host_species
+      - body_site
+      - body_site_ontology_id
+      - condition
+      - condition_ontology_id
       - group_0_name
       - group_1_name
+      - group_1_definition
+      - group_0_sample_size
+      - group_1_sample_size
+      - antibiotics_exclusion
+      - sequencing_type
+      - variable_region_16s
+      - sequencing_platform
+      - data_transformation
+      - statistical_test
+      - significance_threshold
+      - mht_correction
+      - lda_score_above
+      - matched_on
+      - confounders_controlled_for
+      - pielou
+      - shannon
+      - chao1
+      - simpson
+      - inverse_simpson
+      - richness
     attributes:
       signatures:
         title: Signatures
@@ -93,6 +125,8 @@ classes:
       - bsdb
     slots:
       - direction
+      - signature_source
+      - signature_description
     attributes:
       taxa:
         title: Taxa
@@ -138,6 +172,8 @@ slots:
     title: ID
     description: Stable identifier for this entity.
 
+  # --- Study slots ---
+
   source_record_id:
     title: Source Record ID
     description: Study identifier exactly as exported by BugSigDB.
@@ -173,26 +209,204 @@ slots:
     description: Stable URL for the study when no DOI or PMID is available.
     range: uri
 
+  study_design:
+    title: Study Design
+    description: Study design type (e.g. case-control, cross-sectional, meta-analysis).
+    range: string
+
+  authors_list:
+    title: Authors List
+    description: Author list as provided by BugSigDB.
+    range: string
+
+  journal:
+    title: Journal
+    description: Journal of publication.
+    range: string
+
+  keywords:
+    title: Keywords
+    description: Keywords associated with the study.
+    range: string
+
+  # --- Experiment slots ---
+
   experiment_name:
     title: Experiment Name
     description: Label for the experiment.
     range: string
 
+  location_of_subjects:
+    title: Location of Subjects
+    description: Geographic location of study subjects.
+    range: string
+
+  host_species:
+    title: Host Species
+    description: Host organism species (e.g. Homo sapiens, Mus musculus).
+    range: string
+
+  body_site:
+    title: Body Site
+    description: Anatomical site of sample collection (e.g. stool, skin, oral cavity).
+    range: string
+
+  body_site_ontology_id:
+    title: Body Site Ontology ID
+    description: UBERON ontology term(s) for the body site (e.g. UBERON:0001988).
+    aliases:
+      - UBERON ID
+    range: string
+    pattern: "^UBERON:[0-9]+$"
+    multivalued: true
+
+  condition:
+    title: Condition
+    description: Disease or condition under study (e.g. obesity, colorectal cancer).
+    range: string
+
+  condition_ontology_id:
+    title: Condition Ontology ID
+    description: >-
+      Ontology term(s) for the condition. BugSigDB labels this column "EFO ID"
+      but it contains CURIEs from multiple ontologies including EFO, MONDO,
+      HP, CHEBI, GO, and others.
+    aliases:
+      - EFO ID
+    range: string
+    multivalued: true
+
   group_0_name:
     title: Group 0 Name
-    description: Label for one of the contrasted sample groups.
+    description: Label for the control or reference sample group.
     range: string
 
   group_1_name:
     title: Group 1 Name
-    description: Label for the other contrasted sample group.
+    description: Label for the case or experimental sample group.
     range: string
+
+  group_1_definition:
+    title: Group 1 Definition
+    description: Detailed definition of the case group.
+    range: string
+
+  group_0_sample_size:
+    title: Group 0 Sample Size
+    description: Number of subjects in the control group.
+    range: integer
+    minimum_value: 0
+
+  group_1_sample_size:
+    title: Group 1 Sample Size
+    description: Number of subjects in the case group.
+    range: integer
+    minimum_value: 0
+
+  antibiotics_exclusion:
+    title: Antibiotics Exclusion
+    description: Whether subjects on antibiotics were excluded.
+    range: string
+
+  sequencing_type:
+    title: Sequencing Type
+    description: Sequencing approach (e.g. 16S, shotgun, metatranscriptomics).
+    range: string
+
+  variable_region_16s:
+    title: 16S Variable Region
+    description: Targeted 16S rRNA variable region (e.g. V4, V3V4).
+    range: string
+
+  sequencing_platform:
+    title: Sequencing Platform
+    description: Sequencing platform used (e.g. Illumina, Ion Torrent).
+    range: string
+
+  data_transformation:
+    title: Data Transformation
+    description: Data normalization or transformation applied (e.g. relative abundances).
+    range: string
+
+  statistical_test:
+    title: Statistical Test
+    description: Statistical test used for differential abundance (e.g. Mann-Whitney, DESeq2).
+    range: string
+
+  significance_threshold:
+    title: Significance Threshold
+    description: P-value or FDR threshold used for significance.
+    range: float
+
+  mht_correction:
+    title: MHT Correction
+    description: Multiple hypothesis testing correction method (e.g. BH, Bonferroni).
+    range: string
+
+  lda_score_above:
+    title: LDA Score Above
+    description: LEfSe LDA score threshold if applicable.
+    range: float
+
+  matched_on:
+    title: Matched On
+    description: Variables on which groups were matched (e.g. age, BMI).
+    range: string
+
+  confounders_controlled_for:
+    title: Confounders Controlled For
+    description: Confounders accounted for in the analysis.
+    range: string
+
+  pielou:
+    title: Pielou Evenness
+    description: Pielou's evenness index result.
+    range: string
+
+  shannon:
+    title: Shannon Diversity
+    description: Shannon diversity index result.
+    range: string
+
+  chao1:
+    title: Chao1 Richness
+    description: Chao1 richness estimator result.
+    range: string
+
+  simpson:
+    title: Simpson Index
+    description: Simpson diversity index result.
+    range: string
+
+  inverse_simpson:
+    title: Inverse Simpson
+    description: Inverse Simpson diversity index result.
+    range: string
+
+  richness:
+    title: Richness
+    description: Observed species richness.
+    range: string
+
+  # --- Signature slots ---
 
   direction:
     title: Direction
     description: Reported direction of abundance change for taxa in the signature.
     range: DirectionEnum
     required: true
+
+  signature_source:
+    title: Source
+    description: Source of the signature within the publication (e.g. Table S6, Figure 3).
+    range: string
+
+  signature_description:
+    title: Description
+    description: Free-text description of the signature from BugSigDB curators.
+    range: string
+
+  # --- Taxon slots ---
 
   taxon_name:
     title: Taxon Name

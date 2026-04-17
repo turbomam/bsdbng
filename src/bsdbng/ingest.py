@@ -51,6 +51,35 @@ def _parse_signature_id(bsdb_id: str) -> str:
     return bsdb_id.replace("/", "-")
 
 
+def _clean(value: str) -> str | None:
+    """Strip whitespace and convert 'NA' or empty strings to None."""
+    v = value.strip()
+    return None if v in ("", "NA") else v
+
+
+def _clean_list(value: str) -> list[str] | None:
+    """Split a comma-separated value into a list, filtering blanks and NA."""
+    items = [v.strip() for v in value.split(",") if v.strip() not in ("", "NA")]
+    return items if items else None
+
+
+def _clean_int(value: str) -> int | None:
+    """Parse an integer from a CSV value, returning None for non-numeric."""
+    v = value.strip()
+    return int(v) if v.isdigit() else None
+
+
+def _clean_float(value: str) -> float | None:
+    """Parse a float from a CSV value, returning None for non-numeric."""
+    v = value.strip()
+    if v in ("", "NA"):
+        return None
+    try:
+        return float(v)
+    except ValueError:
+        return None
+
+
 def _taxon_name_to_rank(name: str) -> str:
     """Heuristic for taxonomic rank from the taxon name string.
 
@@ -205,6 +234,8 @@ def _build_study_record(
                 {
                     "id": sig_id,
                     "direction": direction_raw,
+                    "signature_source": _clean(row.get("Source", "")),
+                    "signature_description": _clean(row.get("Description", "")),
                     "taxa": taxa,
                 }
             )
@@ -223,9 +254,37 @@ def _build_study_record(
         experiment_records.append(
             {
                 "id": exp_id,
-                "experiment_name": exp_first.get("Experiment", "").strip() or None,
-                "group_0_name": exp_first.get("Group 0 name", "").strip() or None,
-                "group_1_name": exp_first.get("Group 1 name", "").strip() or None,
+                "experiment_name": _clean(exp_first.get("Experiment", "")),
+                "location_of_subjects": _clean(exp_first.get("Location of subjects", "")),
+                "host_species": _clean(exp_first.get("Host species", "")),
+                "body_site": _clean(exp_first.get("Body site", "")),
+                "body_site_ontology_id": _clean_list(exp_first.get("UBERON ID", "")),
+                "condition": _clean(exp_first.get("Condition", "")),
+                "condition_ontology_id": _clean_list(exp_first.get("EFO ID", "")),
+                "group_0_name": _clean(exp_first.get("Group 0 name", "")),
+                "group_1_name": _clean(exp_first.get("Group 1 name", "")),
+                "group_1_definition": _clean(exp_first.get("Group 1 definition", "")),
+                "group_0_sample_size": _clean_int(exp_first.get("Group 0 sample size", "")),
+                "group_1_sample_size": _clean_int(exp_first.get("Group 1 sample size", "")),
+                "antibiotics_exclusion": _clean(exp_first.get("Antibiotics exclusion", "")),
+                "sequencing_type": _clean(exp_first.get("Sequencing type", "")),
+                "variable_region_16s": _clean(exp_first.get("16S variable region", "")),
+                "sequencing_platform": _clean(exp_first.get("Sequencing platform", "")),
+                "data_transformation": _clean(exp_first.get("Data transformation", "")),
+                "statistical_test": _clean(exp_first.get("Statistical test", "")),
+                "significance_threshold": _clean_float(exp_first.get("Significance threshold", "")),
+                "mht_correction": _clean(exp_first.get("MHT correction", "")),
+                "lda_score_above": _clean_float(exp_first.get("LDA Score above", "")),
+                "matched_on": _clean(exp_first.get("Matched on", "")),
+                "confounders_controlled_for": _clean(
+                    exp_first.get("Confounders controlled for", "")
+                ),
+                "pielou": _clean(exp_first.get("Pielou", "")),
+                "shannon": _clean(exp_first.get("Shannon", "")),
+                "chao1": _clean(exp_first.get("Chao1", "")),
+                "simpson": _clean(exp_first.get("Simpson", "")),
+                "inverse_simpson": _clean(exp_first.get("Inverse Simpson", "")),
+                "richness": _clean(exp_first.get("Richness", "")),
                 "signatures": sig_records,
             }
         )
@@ -300,10 +359,14 @@ def _build_study_record(
         "id": study_id,
         "source_record_id": first.get("Study", "").strip(),
         "pmid": pmid,
-        "title": first.get("Title", "").strip() or None,
+        "title": _clean(first.get("Title", "")),
         "publication_year": pub_year,
         "doi": doi,
         "url": url,
+        "study_design": _clean(first.get("Study design", "")),
+        "authors_list": _clean(first.get("Authors list", "")),
+        "journal": _clean(first.get("Journal", "")),
+        "keywords": _clean(first.get("Keywords", "")),
         "experiments": experiment_records,
     }
 

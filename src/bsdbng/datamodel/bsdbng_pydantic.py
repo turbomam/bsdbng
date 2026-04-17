@@ -74,8 +74,12 @@ linkml_meta = LinkMLMeta({'default_prefix': 'bsdbng',
      'imports': ['linkml:types'],
      'license': 'MIT',
      'name': 'bsdbng',
-     'prefixes': {'NCBITaxon': {'prefix_prefix': 'NCBITaxon',
+     'prefixes': {'EFO': {'prefix_prefix': 'EFO',
+                          'prefix_reference': 'http://identifiers.org/efo/'},
+                  'NCBITaxon': {'prefix_prefix': 'NCBITaxon',
                                 'prefix_reference': 'http://purl.obolibrary.org/obo/NCBITaxon_'},
+                  'UBERON': {'prefix_prefix': 'UBERON',
+                             'prefix_reference': 'http://purl.obolibrary.org/obo/UBERON_'},
                   'bsdb': {'prefix_prefix': 'bsdb',
                            'prefix_reference': 'https://bugsigdb.org/Study_'},
                   'bsdbng': {'prefix_prefix': 'bsdbng',
@@ -142,6 +146,10 @@ class Study(NamedThing):
     publication_year: Optional[int] = Field(default=None, title="Publication Year", description="""Publication year.""", ge=1900, le=2100, json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     doi: Optional[str] = Field(default=None, title="DOI", description="""Digital object identifier for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     url: Optional[str] = Field(default=None, title="URL", description="""Stable URL for the study when no DOI or PMID is available.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    study_design: Optional[str] = Field(default=None, title="Study Design", description="""Study design type (e.g. case-control, cross-sectional, meta-analysis).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    authors_list: Optional[str] = Field(default=None, title="Authors List", description="""Author list as provided by BugSigDB.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    journal: Optional[str] = Field(default=None, title="Journal", description="""Journal of publication.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
+    keywords: Optional[str] = Field(default=None, title="Keywords", description="""Keywords associated with the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     experiments: list[Experiment] = Field(default=..., title="Experiments", description="""Semantic experiment units recorded for the study.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Study']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB study identifier. Usually numeric (e.g. bsdb:10202341) but some entries use DOIs or PMC IDs (e.g. bsdb:PMC11017998).""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
@@ -185,10 +193,49 @@ class Experiment(NamedThing):
          'title': 'Experiment'})
 
     experiment_name: Optional[str] = Field(default=None, title="Experiment Name", description="""Label for the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    group_0_name: Optional[str] = Field(default=None, title="Group 0 Name", description="""Label for one of the contrasted sample groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    group_1_name: Optional[str] = Field(default=None, title="Group 1 Name", description="""Label for the other contrasted sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    location_of_subjects: Optional[str] = Field(default=None, title="Location of Subjects", description="""Geographic location of study subjects.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    host_species: Optional[str] = Field(default=None, title="Host Species", description="""Host organism species (e.g. Homo sapiens, Mus musculus).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    body_site: Optional[str] = Field(default=None, title="Body Site", description="""Anatomical site of sample collection (e.g. stool, skin, oral cavity).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    body_site_ontology_id: Optional[list[str]] = Field(default=None, title="Body Site Ontology ID", description="""UBERON ontology term(s) for the body site (e.g. UBERON:0001988).""", json_schema_extra = { "linkml_meta": {'aliases': ['UBERON ID'], 'domain_of': ['Experiment']} })
+    condition: Optional[str] = Field(default=None, title="Condition", description="""Disease or condition under study (e.g. obesity, colorectal cancer).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    condition_ontology_id: Optional[list[str]] = Field(default=None, title="Condition Ontology ID", description="""Ontology term(s) for the condition. BugSigDB labels this column \"EFO ID\" but it contains CURIEs from multiple ontologies including EFO, MONDO, HP, CHEBI, GO, and others.""", json_schema_extra = { "linkml_meta": {'aliases': ['EFO ID'], 'domain_of': ['Experiment']} })
+    group_0_name: Optional[str] = Field(default=None, title="Group 0 Name", description="""Label for the control or reference sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_1_name: Optional[str] = Field(default=None, title="Group 1 Name", description="""Label for the case or experimental sample group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_1_definition: Optional[str] = Field(default=None, title="Group 1 Definition", description="""Detailed definition of the case group.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_0_sample_size: Optional[int] = Field(default=None, title="Group 0 Sample Size", description="""Number of subjects in the control group.""", ge=0, json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    group_1_sample_size: Optional[int] = Field(default=None, title="Group 1 Sample Size", description="""Number of subjects in the case group.""", ge=0, json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    antibiotics_exclusion: Optional[str] = Field(default=None, title="Antibiotics Exclusion", description="""Whether subjects on antibiotics were excluded.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    sequencing_type: Optional[str] = Field(default=None, title="Sequencing Type", description="""Sequencing approach (e.g. 16S, shotgun, metatranscriptomics).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    variable_region_16s: Optional[str] = Field(default=None, title="16S Variable Region", description="""Targeted 16S rRNA variable region (e.g. V4, V3V4).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    sequencing_platform: Optional[str] = Field(default=None, title="Sequencing Platform", description="""Sequencing platform used (e.g. Illumina, Ion Torrent).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    data_transformation: Optional[str] = Field(default=None, title="Data Transformation", description="""Data normalization or transformation applied (e.g. relative abundances).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    statistical_test: Optional[str] = Field(default=None, title="Statistical Test", description="""Statistical test used for differential abundance (e.g. Mann-Whitney, DESeq2).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    significance_threshold: Optional[float] = Field(default=None, title="Significance Threshold", description="""P-value or FDR threshold used for significance.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    mht_correction: Optional[str] = Field(default=None, title="MHT Correction", description="""Multiple hypothesis testing correction method (e.g. BH, Bonferroni).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    lda_score_above: Optional[float] = Field(default=None, title="LDA Score Above", description="""LEfSe LDA score threshold if applicable.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    matched_on: Optional[str] = Field(default=None, title="Matched On", description="""Variables on which groups were matched (e.g. age, BMI).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    confounders_controlled_for: Optional[str] = Field(default=None, title="Confounders Controlled For", description="""Confounders accounted for in the analysis.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    pielou: Optional[str] = Field(default=None, title="Pielou Evenness", description="""Pielou's evenness index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    shannon: Optional[str] = Field(default=None, title="Shannon Diversity", description="""Shannon diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    chao1: Optional[str] = Field(default=None, title="Chao1 Richness", description="""Chao1 richness estimator result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    simpson: Optional[str] = Field(default=None, title="Simpson Index", description="""Simpson diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    inverse_simpson: Optional[str] = Field(default=None, title="Inverse Simpson", description="""Inverse Simpson diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    richness: Optional[str] = Field(default=None, title="Richness", description="""Observed species richness.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     signatures: list[Signature] = Field(default=..., title="Signatures", description="""Signatures associated with the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB experiment identifier, e.g. bsdb:10202341-1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
+
+    @field_validator('body_site_ontology_id')
+    def pattern_body_site_ontology_id(cls, v):
+        pattern=re.compile(r"^UBERON:[0-9]+$")
+        if isinstance(v, list):
+            for element in v:
+                if isinstance(element, str) and not pattern.match(element):
+                    err_msg = f"Invalid body_site_ontology_id format: {element}"
+                    raise ValueError(err_msg)
+        elif isinstance(v, str) and not pattern.match(v):
+            err_msg = f"Invalid body_site_ontology_id format: {v}"
+            raise ValueError(err_msg)
+        return v
 
     @field_validator('id')
     def pattern_id(cls, v):
@@ -218,6 +265,8 @@ class Signature(NamedThing):
          'title': 'Signature'})
 
     direction: DirectionEnum = Field(default=..., title="Direction", description="""Reported direction of abundance change for taxa in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
+    signature_source: Optional[str] = Field(default=None, title="Source", description="""Source of the signature within the publication (e.g. Table S6, Figure 3).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
+    signature_description: Optional[str] = Field(default=None, title="Description", description="""Free-text description of the signature from BugSigDB curators.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
     taxa: list[Taxon] = Field(default=..., title="Taxa", description="""Taxa listed in the signature.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Signature']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB signature identifier, e.g. bsdb:10202341-1-1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 
