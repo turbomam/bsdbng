@@ -89,8 +89,8 @@ def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:
     written = ingest(raw_dir, study_dir)
     study_data = yaml.safe_load(written[0].read_text())
 
-    from bsdbng.datamodel import StudyRecord
+    from bsdbng.datamodel import Study
 
-    study = StudyRecord.model_validate(study_data)
+    study = Study.model_validate(study_data)
     assert study.id == "bsdb:99"
     assert study.pmid == 12345678
