@@ -39,6 +39,10 @@ is broken and we need to fix it — not paper over it.
   running Python commands directly
 - Follow the branch naming convention: `issue-<number>-<short-slug>`
 - Reference the issue in commit messages and PR bodies
+- Open a draft PR after the first push to a branch — do not let branches
+  sit without PRs. A branch without a PR is invisible to the team.
+- Keep branches short-lived. If a branch hasn't been updated in a week,
+  either push progress or close the PR with a comment explaining why.
 
 ## What to tell your agent
 
