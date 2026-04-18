@@ -75,7 +75,7 @@ FULL_DUMP_ROW_1 = (
     "BH,NA,age,BMI,,,,,,NA,"
     "Signature 1,Table S1,2024-01-15,TestCurator,TestEditor,Obesity-related taxa,"
     "increased,1783272|91061|1350;1783272|1239|1578|1485,"
-    "k__Bacillati|c__Bacilli|g__Enterococcus;k__Bacillati|p__Bacillota|c__Clostridia|g__Clostridium,"
+    '"k__Bacillati|c__Bacilli|g__Enterococcus,k__Bacillati|p__Bacillota|c__Clostridia|g__Clostridium",'
     "Complete,TestReviewer\n"
 )
 

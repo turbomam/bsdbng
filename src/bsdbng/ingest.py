@@ -390,7 +390,8 @@ def _parse_taxa(
 
     # Semicolons separate distinct taxa
     id_chains = [c.strip() for c in tax_ids.split(";") if c.strip()]
-    name_chains = [c.strip() for c in names.split(";") if c.strip()] if names else []
+    # BugSigDB uses different delimiters: semicolons for IDs, commas for names
+    name_chains = [c.strip() for c in names.split(",") if c.strip()] if names else []
 
     taxa: list[dict[str, str]] = []
     for i, id_chain in enumerate(id_chains):
