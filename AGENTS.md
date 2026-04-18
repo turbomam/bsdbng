@@ -67,6 +67,21 @@ Every data pipeline step must be checked for silent data loss or corruption:
   column.** If you can't say which column a value came from, the mapping
   is undocumented and fragile.
 
+## After a release
+
+When a new release is tagged, check the release assets:
+
+1. Check for new releases: `gh release list --repo turbomam/bsdbng --limit 1`
+2. **Ask the user before downloading** — releases can be large
+3. Download and unpack: `gh release download <tag> --repo turbomam/bsdbng`
+4. Unpack archives: `tar xzf bsdbng-studies-*.tar.gz -C studies/`
+5. Assess the output:
+   - Read `bsdbng-stats-*.txt` — compare counts against previous release
+   - Spot-check a study YAML — are taxon names real or placeholders?
+   - Check the ingest log — are skip counts reasonable?
+   - Compare study count against BugSigDB live (https://bugsigdb.org/Main_Page)
+6. Report any anomalies to the user before they share the release
+
 ## What to tell your agent
 
 If your agent doesn't know about this project's conventions, tell it:
