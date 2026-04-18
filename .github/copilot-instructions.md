@@ -46,6 +46,29 @@ is broken and we need to fix it — not paper over it.
 - Keep branches short-lived. If a branch hasn't been updated in a week,
   either push progress or close the PR with a comment explaining why.
 
+## Data fidelity rules
+
+Every data pipeline step must be checked for silent data loss or corruption:
+
+- **Look at actual output before declaring success.** Open a YAML file.
+  Check that taxon names are real names, not placeholder codes. Check that
+  fields you expect to be populated aren't all null. If 77% of your output
+  has placeholder values, the pipeline is broken — not "mostly working."
+- **High-volume log entries are bugs, not noise.** If the ingest log has
+  87,000 entries saying "using placeholder name," that's not an edge case.
+  That's the majority of the data failing silently. Investigate before
+  moving on.
+- **Verify encoding assumptions against real data.** Don't assume two
+  columns use the same delimiter. Don't assume a column labeled "EFO ID"
+  only contains EFO terms. Check with code: count unique values, check
+  prefixes, compare counts across columns.
+- **The ingest will fail on placeholder values.** If any taxon gets a
+  placeholder name (`taxon_<ID>`), the pipeline raises an error. This is
+  intentional. Fix the parser, don't suppress the error.
+- **Every field in the output YAML must be traceable to a specific CSV
+  column.** If you can't say which column a value came from, the mapping
+  is undocumented and fragile.
+
 ## What to tell your agent
 
 If your agent doesn't know about this project's conventions, tell it:
