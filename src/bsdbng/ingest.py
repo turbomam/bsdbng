@@ -172,13 +172,18 @@ def ingest(
     for reason, count in skip_counts.most_common():
         print(f"  {count:>5}  {reason}", file=sys.stderr)
 
-    # Fail if any single info reason accounts for more than 50% of all taxa.
-    # This catches systemic problems like wrong delimiters or missing lookups
-    # that silently degrade most of the output.
-    placeholder_count = sum(c for r, c in info_counts.items() if "placeholder" in r)
+    # Fail if ingest produced any placeholder-related info entries.
+    # Placeholders are treated as evidence of a systemic parsing problem,
+    # such as wrong delimiters or missing lookups, rather than an edge case.
+    placeholder_reasons = Counter(
+        {reason: count for reason, count in info_counts.items() if "placeholder" in reason}
+    )
+    placeholder_count = sum(placeholder_reasons.values())
     if placeholder_count > 0:
+        most_common = placeholder_reasons.most_common(1)[0][0]
         msg = (
-            f"Ingest produced {placeholder_count} placeholder values. "
+            f"Ingest produced {placeholder_count} placeholder taxon names. "
+            f"Most common reason: {most_common}. "
             f"This indicates a systemic data parsing problem, not an edge case."
         )
         raise ValueError(msg)

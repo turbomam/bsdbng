@@ -176,10 +176,11 @@ def test_ingest_no_placeholder_taxon_names(tmp_path: Path) -> None:
     raw_dir.mkdir()
     _write_full_dump(raw_dir)
 
-    ingest(raw_dir, study_dir)
+    written = ingest(raw_dir, study_dir)
+    assert written, "ingest() should write at least one YAML study file"
 
-    for path in study_dir.glob("*.yaml"):
-        study = yaml.safe_load(path.read_text())
+    for path in written:
+        study = yaml.safe_load(path.read_text(encoding="utf-8"))
         for exp in study.get("experiments", []):
             for sig in exp.get("signatures", []):
                 for taxon in sig.get("taxa", []):
