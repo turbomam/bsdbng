@@ -97,6 +97,15 @@ class DirectionEnum(str, Enum):
     decreased = "decreased"
 
 
+class DiversityDirectionEnum(str, Enum):
+    """
+    Reported direction of change in an alpha diversity metric between the two sample groups.
+    """
+    increased = "increased"
+    decreased = "decreased"
+    unchanged = "unchanged"
+
+
 class TaxonomicRankEnum(str, Enum):
     """
     Allowed taxonomic rank values for normalized BugSigDB taxa.
@@ -215,12 +224,12 @@ class Experiment(NamedThing):
     lda_score_above: Optional[float] = Field(default=None, title="LDA Score Above", description="""LEfSe LDA score threshold if applicable.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     matched_on: Optional[str] = Field(default=None, title="Matched On", description="""Variables on which groups were matched (e.g. age, BMI).""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     confounders_controlled_for: Optional[str] = Field(default=None, title="Confounders Controlled For", description="""Confounders accounted for in the analysis.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    pielou: Optional[str] = Field(default=None, title="Pielou Evenness", description="""Pielou's evenness index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    shannon: Optional[str] = Field(default=None, title="Shannon Diversity", description="""Shannon diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    chao1: Optional[str] = Field(default=None, title="Chao1 Richness", description="""Chao1 richness estimator result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    simpson: Optional[str] = Field(default=None, title="Simpson Index", description="""Simpson diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    inverse_simpson: Optional[str] = Field(default=None, title="Inverse Simpson", description="""Inverse Simpson diversity index result.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
-    richness: Optional[str] = Field(default=None, title="Richness", description="""Observed species richness.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    pielou: Optional[DiversityDirectionEnum] = Field(default=None, title="Pielou Evenness", description="""Direction of change in Pielou's evenness index between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    shannon: Optional[DiversityDirectionEnum] = Field(default=None, title="Shannon Diversity", description="""Direction of change in Shannon diversity index between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    chao1: Optional[DiversityDirectionEnum] = Field(default=None, title="Chao1 Richness", description="""Direction of change in Chao1 richness estimator between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    simpson: Optional[DiversityDirectionEnum] = Field(default=None, title="Simpson Index", description="""Direction of change in Simpson diversity index between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    inverse_simpson: Optional[DiversityDirectionEnum] = Field(default=None, title="Inverse Simpson", description="""Direction of change in inverse Simpson index between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
+    richness: Optional[DiversityDirectionEnum] = Field(default=None, title="Richness", description="""Direction of change in observed species richness between groups.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     signatures: list[Signature] = Field(default=..., title="Signatures", description="""Signatures associated with the experiment.""", json_schema_extra = { "linkml_meta": {'domain_of': ['Experiment']} })
     id: str = Field(default=..., title="ID", description="""BugSigDB experiment identifier, e.g. bsdb:10202341-1.""", json_schema_extra = { "linkml_meta": {'domain_of': ['NamedThing']} })
 

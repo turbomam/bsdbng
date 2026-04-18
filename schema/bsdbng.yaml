@@ -360,33 +360,33 @@ slots:
 
   pielou:
     title: Pielou Evenness
-    description: Pielou's evenness index result.
-    range: string
+    description: Direction of change in Pielou's evenness index between groups.
+    range: DiversityDirectionEnum
 
   shannon:
     title: Shannon Diversity
-    description: Shannon diversity index result.
-    range: string
+    description: Direction of change in Shannon diversity index between groups.
+    range: DiversityDirectionEnum
 
   chao1:
     title: Chao1 Richness
-    description: Chao1 richness estimator result.
-    range: string
+    description: Direction of change in Chao1 richness estimator between groups.
+    range: DiversityDirectionEnum
 
   simpson:
     title: Simpson Index
-    description: Simpson diversity index result.
-    range: string
+    description: Direction of change in Simpson diversity index between groups.
+    range: DiversityDirectionEnum
 
   inverse_simpson:
     title: Inverse Simpson
-    description: Inverse Simpson diversity index result.
-    range: string
+    description: Direction of change in inverse Simpson index between groups.
+    range: DiversityDirectionEnum
 
   richness:
     title: Richness
-    description: Observed species richness.
-    range: string
+    description: Direction of change in observed species richness between groups.
+    range: DiversityDirectionEnum
 
   # --- Signature slots ---
 
@@ -425,6 +425,16 @@ enums:
     permissible_values:
       increased:
       decreased:
+
+  DiversityDirectionEnum:
+    title: Diversity direction values
+    description: >-
+      Reported direction of change in an alpha diversity metric
+      between the two sample groups.
+    permissible_values:
+      increased:
+      decreased:
+      unchanged:
 
   TaxonomicRankEnum:
     title: Taxonomic rank values
