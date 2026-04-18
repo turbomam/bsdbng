@@ -37,13 +37,17 @@ jobs:
       - name: Validate all studies (Pydantic)
         run: just validate-studies
 
-      - name: Report counts
+      - name: Generate stats
+        run: just stats | tee bsdbng-stats-${GITHUB_REF_NAME}.txt
+
+      - name: Report to job summary
         run: |
           echo "## Pipeline results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat bsdbng-stats-${GITHUB_REF_NAME}.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Raw CSVs: $(find data/raw -maxdepth 1 -type f -name '*.csv' | wc -l) files, $(du -sh data/raw/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
-          echo "- Studies: $(find data/studies -maxdepth 1 -type f -name '*.yaml' | wc -l) YAML files, $(du -sh data/studies/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
-          echo "- Ingest log: $(wc -l < data/derived/ingest_log.json) lines" >> $GITHUB_STEP_SUMMARY
+          echo "## Timing" >> $GITHUB_STEP_SUMMARY
           cat logs/pipeline.log >> $GITHUB_STEP_SUMMARY
 
       - name: Package data artifacts
@@ -62,3 +66,4 @@ jobs:
             bsdbng-studies-*.tar.gz
             bsdbng-ingest-log-*.json
             bsdbng-pipeline-log-*.log
+            bsdbng-stats-*.txt

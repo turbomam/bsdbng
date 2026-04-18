@@ -68,7 +68,14 @@ lint-schema:
 
 check-schema: validate-schema lint-schema
 
-check: check-generated lint typecheck test check-schema security
+sync-agent-docs:
+	uv run python scripts/sync_agent_docs.py
+
+check-agent-docs:
+	uv run python scripts/sync_agent_docs.py
+	git diff --exit-code .github/copilot-instructions.md
+
+check: check-generated check-agent-docs lint typecheck test check-schema security
 
 # --- pipeline steps (timed, logged) ---
 
@@ -83,6 +90,9 @@ validate-studies:
 
 validate-studies-linkml:
 	just timed validate-studies-linkml "uv run linkml validate -s {{schema}} -C Study data/studies/*.yaml"
+
+stats:
+	@uv run python -c "from bsdbng.stats import print_stats; print_stats()"
 
 pipeline: download ingest
 
