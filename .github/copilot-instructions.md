@@ -75,10 +75,21 @@ When a new release is tagged, check the release assets:
 
 1. Check for new releases: `gh release list --repo turbomam/bsdbng --limit 1`
 2. **Ask the user before downloading** — releases can be large
-3. Download and unpack: `gh release download <tag> --repo turbomam/bsdbng`
-4. Unpack archives: `tar xzf bsdbng-studies-*.tar.gz -C studies/`
+3. Download selected assets:
+   ```bash
+   mkdir -p release-assets
+   gh release download <tag> --repo turbomam/bsdbng --dir release-assets \
+     --pattern 'bsdbng-studies-*.tar.gz' \
+     --pattern 'bsdbng-stats-*.txt' \
+     --pattern 'bsdbng-ingest-log-*.json'
+   ```
+4. Unpack archives:
+   ```bash
+   mkdir -p studies
+   tar xzf release-assets/bsdbng-studies-*.tar.gz -C studies/
+   ```
 5. Assess the output:
-   - Read `bsdbng-stats-*.txt` — compare counts against previous release
+   - Read `release-assets/bsdbng-stats-*.txt` — compare counts against previous release
    - Spot-check a study YAML — are taxon names real or placeholders?
    - Check the ingest log — are skip counts reasonable?
    - Compare study count against BugSigDB live (https://bugsigdb.org/Main_Page)
