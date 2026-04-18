@@ -27,7 +27,8 @@ def print_stats(
     # Raw CSV stats
     studies_csv = raw_dir / "studies.csv"
     if studies_csv.exists():
-        rows = list(csv.DictReader(studies_csv.open()))
+        with studies_csv.open(encoding="utf-8", newline="") as fh:
+            rows = list(csv.DictReader(fh))
         states = Counter(r.get("State", "").strip() for r in rows)
         print(f"  studies.csv: {len(rows)} studies")
         for state, count in states.most_common():
@@ -35,7 +36,8 @@ def print_stats(
 
     full_dump = raw_dir / "full_dump.csv"
     if full_dump.exists():
-        rows = list(csv.DictReader(line for line in full_dump.open() if not line.startswith("#")))
+        with full_dump.open(encoding="utf-8", newline="") as fh:
+            rows = list(csv.DictReader(line for line in fh if not line.startswith("#")))
         study_ids = {r["BSDB ID"].split("/")[0] for r in rows if r.get("BSDB ID", "").strip()}
         print(f"  full_dump.csv: {len(rows)} rows, {len(study_ids)} unique studies")
 

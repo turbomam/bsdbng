@@ -142,6 +142,12 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     assert exp["statistical_test"] == "Mann-Whitney"
     assert exp["matched_on"] == "age"
     assert exp["confounders_controlled_for"] == "BMI"
+    assert exp["data_transformation"] == "relative abundances"
+    assert exp["mht_correction"] == "BH"
+    assert exp["lda_score_above"] is None
+    assert exp["pielou"] is None
+    assert exp["shannon"] is None
+    assert exp["richness"] is None
     assert len(exp["signatures"]) == 2
 
     # Signature-level fields
