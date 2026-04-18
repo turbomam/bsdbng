@@ -91,6 +91,7 @@ These are properties of the CSV flattening, not of the underlying data:
 - **45 captured** in bsdbng schema (study, experiment, signature, taxon levels)
 - **6 not captured** (curatorial metadata): Signature page name, Curated date, Curator, Revision editor, State, Reviewer
 - **State column** should be used to filter: only ingest Complete records
+  (not yet implemented — tracked in issue #64)
 
 ## Current approach in bsdbng
 
