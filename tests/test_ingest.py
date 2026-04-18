@@ -170,6 +170,27 @@ def test_ingest_produces_yaml(tmp_path: Path) -> None:
     assert sig_decreased["taxa"][0]["taxonomic_rank"] == "species"
 
 
+def test_ingest_no_placeholder_taxon_names(tmp_path: Path) -> None:
+    raw_dir = tmp_path / "raw"
+    study_dir = tmp_path / "studies"
+    raw_dir.mkdir()
+    _write_full_dump(raw_dir)
+
+    written = ingest(raw_dir, study_dir)
+    assert written, "ingest() should write at least one YAML study file"
+
+    for path in written:
+        study = yaml.safe_load(path.read_text(encoding="utf-8"))
+        for exp in study.get("experiments", []):
+            for sig in exp.get("signatures", []):
+                for taxon in sig.get("taxa", []):
+                    name = taxon.get("taxon_name", "")
+                    assert not name.startswith("taxon_"), (
+                        f"{path.name}: placeholder taxon name {name!r} — "
+                        f"name delimiter may be wrong"
+                    )
+
+
 def test_ingest_yaml_round_trips_through_pydantic(tmp_path: Path) -> None:
     raw_dir = tmp_path / "raw"
     study_dir = tmp_path / "studies"
