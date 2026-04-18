@@ -158,18 +158,30 @@ def ingest(
     log_path = derived_dir / "ingest_log.json"
     log_path.write_text(json.dumps(log, indent=2) + "\n")
 
-    # Print summary
+    # Print summary and check for systemic problems
     from collections import Counter
 
     skips = [e for e in log if e["level"] == "skip"]
     infos = [e for e in log if e["level"] == "info"]
     skip_counts = Counter(e["reason"] for e in skips)
+    info_counts = Counter(e["reason"] for e in infos)
     print(
         f"wrote {len(written)} studies, {len(skips)} skips, {len(infos)} info entries:",
         file=sys.stderr,
     )
     for reason, count in skip_counts.most_common():
         print(f"  {count:>5}  {reason}", file=sys.stderr)
+
+    # Fail if any single info reason accounts for more than 50% of all taxa.
+    # This catches systemic problems like wrong delimiters or missing lookups
+    # that silently degrade most of the output.
+    placeholder_count = sum(c for r, c in info_counts.items() if "placeholder" in r)
+    if placeholder_count > 0:
+        msg = (
+            f"Ingest produced {placeholder_count} placeholder values. "
+            f"This indicates a systemic data parsing problem, not an edge case."
+        )
+        raise ValueError(msg)
 
     return written
 
