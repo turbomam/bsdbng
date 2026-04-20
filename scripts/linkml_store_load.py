@@ -26,7 +26,9 @@ STUDY_DIR = Path("data/studies")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--drop", action="store_true", help="Drop existing collection before loading")
+    parser.add_argument(
+        "--drop", action="store_true", help="Drop existing collection before loading"
+    )
     args = parser.parse_args()
 
     client = Client()

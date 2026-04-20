@@ -5,16 +5,20 @@ Requires data loaded by linkml_store_load.py. Data persists between sessions.
 
 Examples:
     # Exact field match
-    uv run python scripts/linkml_store_query.py --field experiments.condition --value "Colorectal cancer"
+    uv run python scripts/linkml_store_query.py \
+        --field experiments.condition --value "Colorectal cancer"
 
     # CURIE match
-    uv run python scripts/linkml_store_query.py --field experiments.condition_ontology_id --value "EFO:0005842"
+    uv run python scripts/linkml_store_query.py \
+        --field experiments.condition_ontology_id --value "EFO:0005842"
 
     # Trigram text similarity (no API key needed)
-    uv run python scripts/linkml_store_query.py --search "gut bacteria in elderly patients"
+    uv run python scripts/linkml_store_query.py \
+        --search "gut bacteria in elderly patients"
 
-    # LLM embedding search (requires OPENAI_API_KEY in .env or llm keys)
-    uv run python scripts/linkml_store_query.py --embed "autoimmune conditions linked to oral bacteria"
+    # LLM embedding search (requires OPENAI_API_KEY)
+    uv run python scripts/linkml_store_query.py \
+        --embed "autoimmune conditions linked to oral bacteria"
 """
 
 from __future__ import annotations
@@ -55,7 +59,9 @@ def print_results(rows: list[dict], label: str, elapsed: float) -> None:
 def main() -> None:
     load_dotenv()
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--field", help="Field name for exact match query")
     parser.add_argument("--value", help="Value for exact match query")
     parser.add_argument("--search", help="Trigram text similarity search (no API key)")
