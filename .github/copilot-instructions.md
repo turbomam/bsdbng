@@ -6,6 +6,25 @@ This project welcomes contributions made with coding agents (Codex, Copilot,
 Claude Code, ChatGPT, or similar). The same rules apply to agent-generated
 code as to hand-written code: it must pass `just check` before committing.
 
+## Branches, deletions, and remote actions
+
+- **Never delete a remote branch without explicit user approval.** Even if
+  a branch looks stale, merged, or orphaned — ask first. A branch with
+  commits ahead of main has unmerged work, period.
+- **Never call a branch "stale" if it has commits ahead of main.** Report
+  what those commits contain and whether the content reached main through
+  another path (cherry-pick, separate PR). Let the user decide.
+- **Never merge a PR without confirming all pushed commits are included.**
+  If you pushed 3 commits but the PR only shows 1, the other 2 will be
+  lost on merge. Check `gh api repos/.../pulls/N/commits` against what
+  you pushed before merging or approving.
+- **Questions are not requests.** When the user asks "why does this branch
+  exist?" or "what's ahead?" — answer the question. Do not interpret it
+  as permission to delete, merge, or take any action.
+- **No destructive remote actions without per-action approval.** This
+  includes `git push origin --delete`, `gh api -X DELETE .../refs/...`,
+  closing issues, and merging PRs. Each action needs its own explicit OK.
+
 ## Do not accept workarounds
 
 If your agent works around a missing tool, a broken path, or a failing check
@@ -34,15 +53,32 @@ A workaround that lets one person keep working creates a trap for the next
 person. If the agent can't use the standard workflow, the standard workflow
 is broken and we need to fix it — not paper over it.
 
+## Required workflow for every change
+
+Every change requires an issue, a linked branch, and a linked PR:
+
+1. **Create or identify a GitHub issue** before writing any code.
+2. **Create a branch linked to the issue** using `gh issue develop`:
+   ```bash
+   gh issue develop <number> --repo turbomam/bsdbng --checkout
+   ```
+   This formally links the branch to the issue in GitHub's Development
+   sidebar. Do not create branches manually with `git checkout -b`.
+3. **Push and open a PR** after the first commit. The PR body must
+   include `Closes #<number>` to formally link the PR to the issue.
+4. **Run `just check`** — all checks must pass before requesting review.
+5. **Wait for CI and Copilot review.** Address all review comments.
+6. **Do not merge your own PR** unless you are the repo owner.
+
+No commits without an issue. No branches without a linked issue.
+No PRs without a linked issue. No merging without CI green and
+review addressed.
+
 ## What agents should do
 
 - Run `just check` after making changes
 - Use Justfile recipes (`just download`, `just ingest`, etc.) instead of
   running Python commands directly
-- Follow the branch naming convention: `issue-<number>-<short-slug>`
-- Reference the issue in commit messages and PR bodies
-- Open a draft PR after the first push to a branch — do not let branches
-  sit without PRs. A branch without a PR is invisible to the team.
 - Keep branches short-lived. If a branch hasn't been updated in a week,
   either push progress or close the PR with a comment explaining why.
 
