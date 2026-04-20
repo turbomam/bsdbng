@@ -51,6 +51,12 @@ test-cov:
 install-hooks:
 	uv run pre-commit install
 
+# Benchmark the four non-R BugSigDB data access methods (raw Help:Export CSVs,
+# BugSigDBExports full_dump, GMT bundle, Zenodo pinned release). Writes per-
+# method TSVs to data/benchmarks/ and a summary to docs/bugsigdb-access-benchmark.md.
+benchmark-bugsigdb-access:
+	uv run python scripts/benchmark_bugsigdb_access.py
+
 security:
 	uv run bandit -c pyproject.toml -r src scripts
 	uv run deptry src
