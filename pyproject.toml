@@ -27,6 +27,11 @@ dev = [
   "ruff>=0.15.10",
   "types-PyYAML>=6.0.12.20260408",
 ]
+mongo = [
+  "linkml-store[llm,mongodb]>=0.3.0",
+  "pymongo>=4.17.0",
+  "python-dotenv>=1.2.2",
+]
 
 [dependency-groups]
 dev = [
