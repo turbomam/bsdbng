@@ -44,14 +44,14 @@ repos:
       - id: bandit
         args: [-c, pyproject.toml]
         additional_dependencies: ["bandit[toml]"]
-  - repo: https://github.com/fpgmaas/deptry
-    rev: 0.21.1
-    hooks:
-      - id: deptry
-        args: [src]
-        pass_filenames: false
   - repo: local
     hooks:
+      - id: deptry
+        name: deptry
+        entry: uv run deptry src
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: mypy
         name: mypy
         entry: uv run mypy src tests
