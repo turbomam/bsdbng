@@ -93,6 +93,17 @@ just check
 - **Your coding agent works around a missing tool**: don't let it. See
   [AGENTS.md](AGENTS.md) for why and what to do instead.
 
+## API keys
+
+Some features (LLM embedding search via linkml-store) require an OpenAI API key.
+
+```bash
+cp .env.example .env
+# Edit .env and add your key
+```
+
+The `.env` file is gitignored and will not be committed. Never commit API keys.
+
 ## Making changes
 
 ### 1. Pick an issue
