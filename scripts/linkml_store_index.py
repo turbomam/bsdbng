@@ -21,13 +21,14 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import time
 
 from dotenv import load_dotenv
 from linkml_store import Client
 from linkml_store.index import get_indexer
 
-MONGO_URI = "mongodb://localhost:27017/bsdbng"
+DEFAULT_MONGO_URI = "mongodb://localhost:27017/bsdbng"
 COLLECTION_NAME = "studies"
 
 
@@ -50,13 +51,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    mongo_uri = os.environ.get("BSDBNG_MONGO_URI", DEFAULT_MONGO_URI)
+
     client = Client()
-    db = client.attach_database(MONGO_URI, alias="bsdbng")
+    db = client.attach_database(mongo_uri, alias="bsdbng")
     collection = db.get_collection(COLLECTION_NAME)
 
     from pymongo import MongoClient
 
-    mongo = MongoClient(MONGO_URI)
+    mongo = MongoClient(mongo_uri)
     mdb = mongo.get_database()
     index_coll_name = f"internal__index__{COLLECTION_NAME}__{args.kind}"
     existing = index_coll_name in mdb.list_collection_names()

@@ -116,10 +116,7 @@ dependencies = [
     { name = "httpx" },
     { name = "linkml" },
     { name = "linkml-runtime" },
-    { name = "linkml-store", extra = ["llm", "mongodb"] },
     { name = "pydantic" },
-    { name = "pymongo" },
-    { name = "python-dotenv" },
     { name = "pyyaml" },
 ]
 
@@ -130,6 +127,11 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "types-pyyaml" },
+]
+mongo = [
+    { name = "linkml-store", extra = ["llm", "mongodb"] },
+    { name = "pymongo" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -154,18 +156,18 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "linkml", specifier = ">=1.10.0" },
     { name = "linkml-runtime", specifier = ">=1.8.3" },
-    { name = "linkml-store", extras = ["llm", "mongodb"], specifier = ">=0.3.0" },
+    { name = "linkml-store", extras = ["llm", "mongodb"], marker = "extra == 'mongo'", specifier = ">=0.3.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.2.0" },
     { name = "pydantic", specifier = ">=2.13.0" },
-    { name = "pymongo", specifier = ">=4.17.0" },
+    { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.17.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "python-dotenv", marker = "extra == 'mongo'", specifier = ">=1.2.2" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.10" },
     { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.12.20260408" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "mongo"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -68,6 +68,44 @@ All commands go through the Justfile. Run `just --list` to see them all.
 
 Every pipeline step is timed and logged to `logs/pipeline.log`.
 
+### Querying studies with linkml-store over MongoDB
+
+The `mongo` optional extra (installed by `uv sync --all-extras`) pulls in
+[`linkml-store`](https://github.com/linkml/linkml-store), `pymongo`, and
+`python-dotenv`. Use it to query the ingested studies three different ways:
+exact-match, trigram similarity, or OpenAI embedding semantic search.
+
+**Prereqs:**
+
+- MongoDB running locally on `mongodb://localhost:27017` (override with
+  `BSDBNG_MONGO_URI=...`).
+- `data/studies/` populated (run `just pipeline` first).
+- For embedding search only: `OPENAI_API_KEY` in `.env` (see `.env.example`).
+
+**One-time setup:**
+
+```bash
+just mongo-load         # load 1,900+ study YAMLs into MongoDB (~45s)
+just index-trigram      # build trigram index (free, ~seconds)
+just index-embeddings   # build OpenAI embedding index (~minutes, $)
+```
+
+**Queries:**
+
+```bash
+just query-field experiments.condition "Colorectal cancer"
+just search-trigram "gut bacteria in elderly patients"
+just search-embeddings "autoimmune conditions linked to oral bacteria"
+
+# side-by-side demo: exact-match returns nothing, embeddings return
+# five semantically-spot-on studies (Alzheimer's, Parkinson's, ...)
+just demo-embeddings
+```
+
+The Justfile also ships `yq-*` recipes (direct yq over YAML files) and
+`mongo-native-*` recipes (mongosh aggregations) for contrast with the
+linkml-store approach.
+
 ## Contributing
 
 ### Workflow

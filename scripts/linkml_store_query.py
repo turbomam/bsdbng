@@ -24,13 +24,14 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import os
 import time
 
 from dotenv import load_dotenv
 from linkml_store import Client
 from linkml_store.api.queries import Query
 
-MONGO_URI = "mongodb://localhost:27017/bsdbng"
+DEFAULT_MONGO_URI = "mongodb://localhost:27017/bsdbng"
 COLLECTION_NAME = "studies"
 
 
@@ -79,18 +80,26 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--field", help="Field name for exact match query")
-    parser.add_argument("--value", help="Value for exact match query")
-    parser.add_argument("--search", help="Trigram text similarity search (no API key)")
-    parser.add_argument("--embed", help="LLM embedding semantic search (requires OPENAI_API_KEY)")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--field", help="Field name for exact match query (requires --value)")
+    mode.add_argument("--search", help="Trigram text similarity search (no API key)")
+    mode.add_argument("--embed", help="LLM embedding semantic search (requires OPENAI_API_KEY)")
+    parser.add_argument("--value", help="Value for exact match query (used with --field)")
     parser.add_argument("--limit", type=int, default=5, help="Max results (default: 5)")
     args = parser.parse_args()
 
+    if args.field and not args.value:
+        parser.error("--value is required when using --field")
+    if args.value and not args.field:
+        parser.error("--field is required when using --value")
+
+    mongo_uri = os.environ.get("BSDBNG_MONGO_URI", DEFAULT_MONGO_URI)
+
     client = Client()
-    db = client.attach_database(MONGO_URI, alias="bsdbng")
+    db = client.attach_database(mongo_uri, alias="bsdbng")
     collection = db.get_collection(COLLECTION_NAME)
 
-    if args.field and args.value:
+    if args.field:
         t0 = time.time()
         qr = collection.query(Query(where_clause={args.field: args.value}), limit=args.limit)
         rows = list(qr.rows)

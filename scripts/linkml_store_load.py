@@ -13,16 +13,16 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import time
-from pathlib import Path
 
 import yaml
 from linkml_store import Client
 
-MONGO_URI = "mongodb://localhost:27017/bsdbng"
+from bsdbng.paths import SCHEMA_PATH, STUDY_DATA_DIR
+
+DEFAULT_MONGO_URI = "mongodb://localhost:27017/bsdbng"
 COLLECTION_NAME = "studies"
-SCHEMA_PATH = "schema/bsdbng.yaml"
-STUDY_DIR = Path("data/studies")
 INDEX_COLLECTIONS = [
     f"internal__index__{COLLECTION_NAME}__simple",
     f"internal__index__{COLLECTION_NAME}__simple__metadata",
@@ -32,7 +32,10 @@ INDEX_COLLECTIONS = [
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--drop",
         action="store_true",
@@ -40,25 +43,27 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    mongo_uri = os.environ.get("BSDBNG_MONGO_URI", DEFAULT_MONGO_URI)
+
     client = Client()
-    db = client.attach_database(MONGO_URI, alias="bsdbng")
+    db = client.attach_database(mongo_uri, alias="bsdbng")
 
     if args.drop:
         from pymongo import MongoClient
 
-        mongo = MongoClient(MONGO_URI)
+        mongo = MongoClient(mongo_uri)
         mdb = mongo.get_database()
         for name in [COLLECTION_NAME, *INDEX_COLLECTIONS]:
             mdb.drop_collection(name)
         print(f"Dropped {COLLECTION_NAME} and its indexes")
 
     collection = db.create_collection(
-        COLLECTION_NAME, schema_path=SCHEMA_PATH, target_class="Study"
+        COLLECTION_NAME, schema_path=str(SCHEMA_PATH), target_class="Study"
     )
 
-    files = sorted(STUDY_DIR.glob("*.yaml"))
+    files = sorted(STUDY_DATA_DIR.glob("*.yaml"))
     if not files:
-        print(f"No YAML files found in {STUDY_DIR}")
+        print(f"No YAML files found in {STUDY_DATA_DIR}")
         return
 
     t0 = time.time()
