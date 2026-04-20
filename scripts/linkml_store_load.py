@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Load bsdbng study YAML files into MongoDB via linkml-store.
 
-One-time operation — data persists in MongoDB between sessions.
-Subsequent queries (linkml_store_query.py) connect without reloading.
+One-time operation -- data persists in MongoDB between sessions.
+
+Does NOT build any search indexes. Use linkml_store_index.py for that.
 
 Usage:
     uv run python scripts/linkml_store_load.py
@@ -22,12 +23,20 @@ MONGO_URI = "mongodb://localhost:27017/bsdbng"
 COLLECTION_NAME = "studies"
 SCHEMA_PATH = "schema/bsdbng.yaml"
 STUDY_DIR = Path("data/studies")
+INDEX_COLLECTIONS = [
+    f"internal__index__{COLLECTION_NAME}__simple",
+    f"internal__index__{COLLECTION_NAME}__simple__metadata",
+    f"internal__index__{COLLECTION_NAME}__llm",
+    f"internal__index__{COLLECTION_NAME}__llm__metadata",
+]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--drop", action="store_true", help="Drop existing collection before loading"
+        "--drop",
+        action="store_true",
+        help="Drop existing collection and indexes before loading",
     )
     args = parser.parse_args()
 
@@ -38,8 +47,10 @@ def main() -> None:
         from pymongo import MongoClient
 
         mongo = MongoClient(MONGO_URI)
-        mongo.get_database().drop_collection(COLLECTION_NAME)
-        print(f"Dropped {COLLECTION_NAME}")
+        mdb = mongo.get_database()
+        for name in [COLLECTION_NAME, *INDEX_COLLECTIONS]:
+            mdb.drop_collection(name)
+        print(f"Dropped {COLLECTION_NAME} and its indexes")
 
     collection = db.create_collection(
         COLLECTION_NAME, schema_path=SCHEMA_PATH, target_class="Study"
@@ -56,8 +67,7 @@ def main() -> None:
         if (i + 1) % 500 == 0:
             print(f"  loaded {i + 1}/{len(files)}...")
 
-    elapsed = time.time() - t0
-    print(f"Loaded {len(files)} studies in {elapsed:.1f}s")
+    print(f"Loaded {len(files)} studies in {time.time() - t0:.1f}s")
 
 
 if __name__ == "__main__":

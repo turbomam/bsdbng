@@ -29,10 +29,27 @@ import time
 from dotenv import load_dotenv
 from linkml_store import Client
 from linkml_store.api.queries import Query
-from linkml_store.index import get_indexer
 
 MONGO_URI = "mongodb://localhost:27017/bsdbng"
 COLLECTION_NAME = "studies"
+
+
+def _dedup_by_id(rows: list[dict]) -> list[dict]:
+    """Drop rows with a duplicate `id`, preserving first-seen order.
+
+    The LLM indexer splits each study into multiple chunks, so a single
+    logical study can appear several times in ranked search results.
+    """
+    seen: set[str] = set()
+    out: list[dict] = []
+    for r in rows:
+        k = r.get("id")
+        if k in seen:
+            continue
+        if k is not None:
+            seen.add(k)
+        out.append(r)
+    return out
 
 
 def print_results(rows: list[dict], label: str, elapsed: float) -> None:
@@ -51,7 +68,7 @@ def print_results(rows: list[dict], label: str, elapsed: float) -> None:
             (e.get("body_site") for e in r.get("experiments", []) if e.get("body_site")),
             None,
         )
-        title = (r.get("title") or "no title")[:65]
+        title = r.get("title") or "no title"
         print(f"  {r.get('id')}: {title}")
         print(f"    condition={cond}, host={host}, body_site={body}")
 
@@ -80,19 +97,15 @@ def main() -> None:
         print_results(rows, f"{args.field} = {args.value!r}", time.time() - t0)
 
     elif args.search:
-        index = get_indexer("simple")
-        collection.attach_indexer(index, "simple")
         t0 = time.time()
-        qr = collection.search(args.search, index_name="simple", limit=args.limit)
-        rows = list(qr.rows)
+        qr = collection.search(args.search, index_name="simple", limit=args.limit * 4)
+        rows = _dedup_by_id(qr.rows)[: args.limit]
         print_results(rows, f"trigram: {args.search!r}", time.time() - t0)
 
     elif args.embed:
-        llm_index = get_indexer("llm")
-        collection.attach_indexer(llm_index, "llm")
         t0 = time.time()
-        qr = collection.search(args.embed, index_name="llm", limit=args.limit)
-        rows = list(qr.rows)
+        qr = collection.search(args.embed, index_name="llm", limit=args.limit * 4)
+        rows = _dedup_by_id(qr.rows)[: args.limit]
         print_results(rows, f"embedding: {args.embed!r}", time.time() - t0)
 
     else:
