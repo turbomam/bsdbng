@@ -96,6 +96,90 @@ stats:
 
 pipeline: download ingest
 
+# --- linkml-store over MongoDB (localhost:27017/bsdbng.studies) ---
+# Run once to populate the collection:
+mongo-load:
+	just timed mongo-load "uv run python scripts/linkml_store_load.py"
+
+# Wipe the studies collection AND all its indexes, then reload:
+mongo-reload:
+	just timed mongo-reload "uv run python scripts/linkml_store_load.py --drop"
+
+# Build a trigram (substring) index -- no API key, ~seconds:
+index-trigram:
+	just timed index-trigram "uv run python scripts/linkml_store_index.py --kind simple"
+
+# Build an OpenAI embedding index -- requires OPENAI_API_KEY, ~minutes:
+index-embeddings:
+	just timed index-embeddings "uv run python scripts/linkml_store_index.py --kind llm"
+
+# Rebuild an index (drop + recreate) -- use after re-loading data:
+rebuild-trigram:
+	uv run python scripts/linkml_store_index.py --kind simple --rebuild
+
+rebuild-embeddings:
+	uv run python scripts/linkml_store_index.py --kind llm --rebuild
+
+# --- linkml-store queries ---
+
+# Exact match on a field path (nested paths use dots):
+#   just query-field experiments.condition "Colorectal cancer"
+#   just query-field experiments.condition_ontology_id "EFO:0005842"
+query-field FIELD VALUE:
+	uv run python scripts/linkml_store_query.py --field {{FIELD}} --value "{{VALUE}}"
+
+# Trigram substring search:
+#   just search-trigram "gut bacteria in elderly patients"
+search-trigram QUERY:
+	uv run python scripts/linkml_store_query.py --search "{{QUERY}}"
+
+# Embedding semantic search:
+#   just search-embeddings "autoimmune conditions linked to oral bacteria"
+search-embeddings QUERY:
+	uv run python scripts/linkml_store_query.py --embed "{{QUERY}}"
+
+# Canonical demo of what embeddings buy you: a query whose top-5 hits are
+# impossible to retrieve with exact-match (no study contains the phrase
+# "diseases of aging" -- the matches are Alzheimer's, Parkinson's,
+# age-related sepsis, aging-mouse obesity, saliva-age signatures).
+demo-embeddings:
+	@echo "--- baseline: exact match on 'diseases of aging' (returns nothing) ---"
+	@just query-field title "diseases of aging" || true
+	@echo
+	@echo "--- embeddings: semantically related studies ---"
+	@just search-embeddings "diseases of aging"
+
+# --- yq: direct queries over YAML files (no DB, no index) ---
+
+# Find all studies whose title matches a substring (case-insensitive):
+#   just yq-title-search colorectal
+yq-title-search SUBSTRING:
+	@SUB="{{SUBSTRING}}" yq -r 'select((.title // "") | test("(?i)" + strenv(SUB))) | [.id, .title] | @tsv' \
+	  data/studies/*.yaml | grep -v '^$' | head -20
+
+# Find all studies where any experiment has a given condition (exact match):
+#   just yq-condition "Parkinson's disease"
+yq-condition CONDITION:
+	@COND="{{CONDITION}}" yq -r 'select(.experiments[].condition == strenv(COND)) | [.id, .title] | @tsv' \
+	  data/studies/*.yaml | grep -v '^$' | head -20
+
+# --- native MongoDB (mongosh) ---
+
+# Count studies by host species via aggregation pipeline:
+mongo-native-hosts:
+	@mongosh --quiet bsdbng --eval '\
+	  db.studies.aggregate([ \
+	    {$unwind: "$experiments"}, \
+	    {$group: {_id: "$experiments.host_species", n: {$sum: 1}}}, \
+	    {$sort: {n: -1}}, \
+	    {$limit: 10} \
+	  ]).forEach(d => print(d._id + "\t" + d.n))'
+
+# Fetch one study by id:
+#   just mongo-native-one bsdb:31182740
+mongo-native-one ID:
+	@mongosh --quiet bsdbng --eval 'printjson(db.studies.findOne({id: "{{ID}}"}, {id:1, title:1, "experiments.condition":1}))'
+
 # --- cleanup ---
 
 clean-raw:
