@@ -2,7 +2,7 @@
 
 This file records a single-run benchmark of the non-R BugSigDB data access methods.
 
-Generated at: `2026-04-20T20:07:57+00:00`
+Generated at: `2026-04-20T20:15:10+00:00`
 
 ## Methodology
 
@@ -16,10 +16,10 @@ Generated at: `2026-04-20T20:07:57+00:00`
 
 | Method | Files | Declared size | Downloaded size | Total seconds | Throughput |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| raw_csv_exports | 3 | 24.03 MiB | 24.03 MiB | 0.53 | 45.56 MiB/s |
-| bugsigdbexports_full_dump | 1 | 26.52 MiB | 26.52 MiB | 0.27 | 98.79 MiB/s |
-| bugsigdbexports_gmt_bundle | 15 | 44.02 MiB | 44.02 MiB | 1.35 | 32.55 MiB/s |
-| zenodo_release_15272273 | 17 | 49.20 MiB | 49.20 MiB | 5.69 | 8.64 MiB/s |
+| raw_csv_exports | 3 | 24.03 MiB | 24.03 MiB | 0.47 | 50.92 MiB/s |
+| bugsigdbexports_full_dump | 1 | 26.52 MiB | 26.52 MiB | 0.29 | 91.30 MiB/s |
+| bugsigdbexports_gmt_bundle | 15 | 44.02 MiB | 44.02 MiB | 0.66 | 66.94 MiB/s |
+| zenodo_release_15272273 | 17 | 49.20 MiB | 49.20 MiB | 5.60 | 8.78 MiB/s |
 
 ## Notes
 

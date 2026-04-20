@@ -18,12 +18,13 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
 
 import httpx
 
-BENCHMARK_DIR = Path("data/benchmarks")
-REPORT_PATH = Path("docs/bugsigdb-access-benchmark.md")
+from bsdbng.paths import REPO_ROOT
+
+BENCHMARK_DIR = REPO_ROOT / "data" / "benchmarks"
+REPORT_PATH = REPO_ROOT / "docs" / "bugsigdb-access-benchmark.md"
 USER_AGENT = "bsdbng-benchmark/0.1"
 ZENODO_RECORD_ID = "15272273"
 
@@ -64,9 +65,16 @@ def _download_bytes(url: str, client: httpx.Client) -> tuple[int, float]:
 
 
 def _list_gh_contents(client: httpx.Client, api_url: str) -> list[dict]:
-    response = client.get(api_url, follow_redirects=True)
-    response.raise_for_status()
-    return response.json()
+    """Fetch a GitHub contents listing, following Link header pagination."""
+    entries: list[dict] = []
+    url: str | None = f"{api_url}?per_page=100"
+    while url:
+        response = client.get(url, follow_redirects=True)
+        response.raise_for_status()
+        entries.extend(response.json())
+        next_link = response.links.get("next")
+        url = next_link["url"] if next_link else None
+    return entries
 
 
 def _list_zenodo_files(client: httpx.Client, api_url: str) -> list[dict]:
