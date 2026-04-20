@@ -186,3 +186,4 @@ for the full audit of what gets discarded and why.
 - [Where bsdbng came from](docs/origin-story.md) — how this repo relates to the
   KG-Microbe-search prototype and how to talk about your contributions
 - [BugSigDB data access methods](docs/bugsigdb-access-methods.md)
+- [BugSigDB live counts](docs/bugsigdb-live-counts.md)
