@@ -57,6 +57,15 @@ install-hooks:
 benchmark-bugsigdb-access:
 	uv run python scripts/benchmark_bugsigdb_access.py
 
+# Download the merged KG-Microbe nodes and edges TSVs from a pinned Google Drive
+# folder (Marcin Joachimiak's published build) into data/kg-microbe/. Skips files
+# whose provenance fingerprint still matches. Re-download with `just download-kg-force`.
+download-kg:
+	uv run --extra kg python scripts/download_kg_microbe.py
+
+download-kg-force:
+	uv run --extra kg python scripts/download_kg_microbe.py --force
+
 security:
 	uv run bandit -c pyproject.toml -r src scripts
 	uv run deptry src

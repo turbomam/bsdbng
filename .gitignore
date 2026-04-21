@@ -18,6 +18,7 @@ data/studies/*.yaml
 data/derived/*
 !data/derived/.gitkeep
 data/benchmarks/*
+data/kg-microbe/*.tsv
 logs/
 
 .env

@@ -68,6 +68,24 @@ All commands go through the Justfile. Run `just --list` to see them all.
 
 Every pipeline step is timed and logged to `logs/pipeline.log`.
 
+### Downloading KG-Microbe for trait enrichment
+
+The `kg` optional extra (installed by `uv sync --all-extras`) pulls in
+[`gdown`](https://github.com/wkentaro/gdown), a pure-Python Google Drive
+downloader. Use it to fetch the merged KG-Microbe nodes and edges from
+[Marcin Joachimiak's published build](https://drive.google.com/drive/folders/1-oxGDvJS5oWlwhT1bV_ns2KMeumVLnTa)
+(January 2026 snapshot, file IDs pinned in `scripts/download_kg_microbe.py`):
+
+```bash
+just download-kg          # skips files whose provenance fingerprint matches
+just download-kg-force    # redownload unconditionally
+```
+
+Outputs land in `data/kg-microbe/` (gitignored TSVs, versioned
+`provenance.json` with file IDs, sizes, md5s, and fetch time). When a
+newer build lands in a new Drive folder, update the file IDs at the top
+of `scripts/download_kg_microbe.py` and rerun.
+
 ### Querying studies with linkml-store over MongoDB
 
 The `mongo` optional extra (installed by `uv sync --all-extras`) pulls in
