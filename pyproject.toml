@@ -27,6 +27,9 @@ dev = [
   "ruff>=0.15.10",
   "types-PyYAML>=6.0.12.20260408",
 ]
+kg = [
+  "gdown>=6.0.0",
+]
 mongo = [
   "linkml-store[llm,mongodb]>=0.3.0",
   "pymongo>=4.17.0",
